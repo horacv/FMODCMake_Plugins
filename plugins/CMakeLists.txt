@@ -1,0 +1,8 @@
+add_subdirectory(delay)
+add_subdirectory(eq_4b)
+add_subdirectory(gain)
+add_subdirectory(hpf_1p)
+add_subdirectory(hpf_2p)
+add_subdirectory(lpf_1p)
+add_subdirectory(lpf_2p)
+add_subdirectory(passthrough)

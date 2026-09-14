@@ -1,0 +1,26 @@
+﻿# Binaries and artifacts
+.idea
+/build
+*cmake_install.cmake
+*Makefile
+*CMakeFiles
+*.cmake
+*.exe
+*.dll
+*.lib
+*.a
+*.so
+*.dylib
+*.pyc
+
+# FMOD Libs
+libs/fmod/**
+!libs/fmod/
+!libs/fmod/**/
+!libs/fmod/**/CMakeLists.txt
+!libs/fmod/**/readme.md
+*.framework/
+
+# FMOD Project
+fmod_project/**
+!fmod_project/readme.md
