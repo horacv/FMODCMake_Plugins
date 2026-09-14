@@ -1,0 +1,83 @@
+name: Build and Test (Windows, Linux, macOS)
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+        os_config:
+          - os: windows-latest
+            platform: windows
+            fmod_api_version: "20314"
+          - os: ubuntu-latest
+            platform: linux
+            fmod_api_version: "20314"
+          - os: macos-latest
+            platform: mac
+            fmod_api_version: "20314"
+
+    runs-on: ${{ matrix.os_config.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Install 7-Zip (Windows)
+        if: runner.os == 'Windows'
+        run: choco install 7zip -y
+
+      - name: Setup FMOD API
+        env:
+          FMOD_USERNAME: ${{ secrets.FMOD_USERNAME }}
+          FMOD_PASSWORD: ${{ secrets.FMOD_PASSWORD }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python tools/setup_fmod_api.py "${{ env.FMOD_USERNAME }}" "${{ env.FMOD_PASSWORD }}" ${{ matrix.os_config.platform }} ${{ matrix.os_config.fmod_api_version }} --delete-installer
+          
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake -B build
+
+      - name: Configure CMake (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --build build --config ${{ matrix.build_type }}
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cmake --build build
+
+      - name: Upload build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.os_config.platform }}-${{ matrix.build_type }}
+          path: |
+            build/
+            !build/**/*.o
+            !build/**/*.obj
