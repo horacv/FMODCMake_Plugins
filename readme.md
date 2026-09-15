@@ -8,7 +8,7 @@ A CMake template project for developing custom FMOD DSP plugins in C++.
 
 ## Overview
 
-This project provides a structure for creating cross-platform FMOD DSP plugins in C++.
+This project provides a structure for creating cross-platform FMOD DSP plugins in C++.\
 It contains the boilerplate code required to interface with FMOD's DSP callback API, and defines a clean separation between interface, state, and data.
 DSP helper functions are implemented in a standalone testable shared library.
 
@@ -66,8 +66,6 @@ DSP helper functions are implemented in a standalone testable shared library.
 | `eq_4b` | 4-band parametric EQ using cascaded biquads (low shelf, two peaking bands, high shelf). |
 | `delay` | Delay/echo with feedback, built on a circular ring buffer. |
 
-More plugins (tremolo, saturation/waveshaper, compressor/limiter) are planned as the curriculum progresses.
-
 ## Adding a New Plugin
 
 1. Add a new subdirectory under `plugins/`, modeled on `passthrough/` or an existing plugin.
@@ -81,11 +79,17 @@ More plugins (tremolo, saturation/waveshaper, compressor/limiter) are planned as
 1. Open FMOD Studio.
 2. Create a new project or open an existing one.
 3. Go to Edit -> Preferences -> Assets.
-4. In the Plug-ins folder input the folder where the .dlls of your plugins are built Example: `C:/FmodCMake_Plugins/build/debug`.
+4. In the Plug-ins folder input the folder where the .dlls of your plugins are built, for example: `C:/FmodCMake_Plugins/build/debug`.
 5. Enjoy.
 
-## Documentation
+## Official Documentation and Helpful Links
 
 - [FMOD Studio API Getting Started](https://www.fmod.com/docs/2.03/api/studio-api-getting-started.html)
 - [CMake Documentation](https://cmake.org/)
-- [Audio EQ Cookbook (Bristow-Johnson)](https://www.w3.org/TR/audio-eq-cookbook/) — reference for biquad coefficient math used throughout `eq_4b` and the filter plugins
+- [Audio EQ Cookbook (Bristow-Johnson)](https://www.w3.org/TR/audio-eq-cookbook/#formulae) — reference for biquad coefficient math used throughout `eq_4b` and the filter plugins
+- [Designing Audio Effect Plugins in C++ (Pirkle)](https://www.routledge.com/Designing-Audio-Effect-Plugins-in-C-For-AAX-AU-and-VST3-with-DSP-Theory/Pirkle/p/book/9781138591936) - reference for `delay` math and circular buffers
+- [CMake](https://cmake.org/)
+- [CMake Projects in Visual Studio](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170)
+- [Create a CMake hello world project in VS Code](https://code.visualstudio.com/docs/cpp/cmake-quickstart)
+- [Xcode generator in CMake](https://cmake.org/cmake/help/latest/generator/Xcode.html)
+- [CLion - Create/open CMake projects](https://www.jetbrains.com/help/clion/creating-new-project-from-scratch.html#)
