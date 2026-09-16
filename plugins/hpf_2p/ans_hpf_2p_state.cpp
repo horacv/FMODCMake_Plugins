@@ -2,8 +2,6 @@
 
 #include "ans_dsp_filters_biquad.hpp"
 
-using namespace ans_dsp;
-
 namespace ans_hpf_2p
 {
     void ANS_DSP_State::reset(const unsigned int buffer_size, const unsigned int samplerate)
@@ -36,15 +34,18 @@ namespace ans_hpf_2p
         const int num_channels = std::clamp(std::min(in_channels, out_channels), 0, FMOD_MAX_CHANNEL_WIDTH);
         assert(num_channels == std::min(in_channels, out_channels) && "channel count exceeds FMOD_MAX_CHANNEL_WIDTH");
 
-        // Parameter smoothing
-        interpolate_parameters(m_data);
+        // Cutoff Smoothing - Once per block is enough
+        ans_dsp::interpolate_with_coefficient(m_data.m_cutoff_Hz_current.load(std::memory_order_relaxed),
+            m_data.m_smoothing_coefficient, m_data.m_cutoff_Hz_smoothed);
+        // Q Smoothing - Once per block is enough
+        ans_dsp::interpolate_with_coefficient(m_data.m_Q_current.load(std::memory_order_relaxed),
+            m_data.m_smoothing_coefficient, m_data.m_Q_smoothed);
 
         // Biquad filter coefficients: https://www.w3.org/TR/audio-eq-cookbook/#formulae
         // TDF-II formula: https://ccrma.stanford.edu/~jos/fp/Transposed_Direct_Forms.html
 
-        // Normalize the coefficients first
         const auto [a0, a1, a2, b0, b1, b2] =
-            hpf_filter_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(samplerate), m_data.m_Q_smoothed).normalized();
+            ans_dsp::hpf_filter_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(samplerate), m_data.m_Q_smoothed).normalized();
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int buffer_index = 0; buffer_index < buffer_size; ++buffer_index)
@@ -60,30 +61,15 @@ namespace ans_hpf_2p
                 const float output = m_data.state_1[channel_index] + b0 * input;
 
                 // x[n-1] = y[n-1] + |b1| · x[n] - |a1| · y[n]
-                m_data.state_1[channel_index] = flush_subnormal_to_zero(m_data.state_2[channel_index] + b1 * input - a1 * output);
+                m_data.state_1[channel_index] = ans_dsp::flush_subnormal_to_zero(m_data.state_2[channel_index] + b1 * input - a1 * output);
 
                 // y[n-1] = |b2| · x[n] - |a2| · y[n]
-                m_data.state_2[channel_index] = flush_subnormal_to_zero(b2 * input - a2 * output);
+                m_data.state_2[channel_index] = ans_dsp::flush_subnormal_to_zero(b2 * input - a2 * output);
 
                 out_buffer[sample] = output;
             }
         }
 
         return FMOD_OK;
-    }
-
-    void ANS_DSP_State::interpolate_parameters(ANS_DSP_State_Data& data)
-    {
-        if (const float cutoff_Hz_target = data.m_cutoff_Hz_current.load(std::memory_order_relaxed);
-            data.m_cutoff_Hz_smoothed != cutoff_Hz_target)
-        {
-            data.m_cutoff_Hz_smoothed += (cutoff_Hz_target - data.m_cutoff_Hz_smoothed) * (1.0f - data.m_smoothing_coefficient);
-        }
-
-        if (const float Q_target = data.m_Q_current.load(std::memory_order_relaxed);
-            data.m_Q_smoothed != Q_target)
-        {
-            data.m_Q_smoothed += (Q_target - data.m_Q_smoothed)  * (1.0f - data.m_smoothing_coefficient);
-        }
     }
 }

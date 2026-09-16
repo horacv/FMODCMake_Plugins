@@ -22,7 +22,6 @@ namespace ans_lpf_2p
 
     private:
         ANS_DSP_State_Data m_data;
-        static void interpolate_parameters(ANS_DSP_State_Data& data);
     };
 }
 

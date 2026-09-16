@@ -27,23 +27,21 @@ namespace ans_hpf_2p
     struct ANS_DSP_State_Data {
         explicit ANS_DSP_State_Data(const ANS_DSP_Init_Data& init_data)
             : m_defaults(init_data)
+            , m_Q_current(m_defaults.m_Q_default)
+            , m_Q_smoothed(m_Q_current)
+            , m_cutoff_Hz_current(m_defaults.m_cutoff_Hz_default)
+            , m_cutoff_Hz_smoothed(m_cutoff_Hz_current)
             , m_smoothing_coefficient(0)
-        {
-            m_Q_current = m_defaults.m_Q_default;
-            m_Q_smoothed = m_defaults.m_Q_default;
-            m_cutoff_Hz_current = m_defaults.m_cutoff_Hz_default;
-            m_cutoff_Hz_smoothed = m_defaults.m_cutoff_Hz_default;
-            m_defaults.m_Q_default = std::clamp(init_data.m_Q_default, init_data.m_Q_min, init_data.m_Q_max);
-            m_defaults.m_cutoff_Hz_default = std::clamp(init_data.m_cutoff_Hz_default,init_data.m_cutoff_Hz_min, init_data.m_cutoff_Hz_max);
-        }
+        {}
 
         ANS_DSP_Init_Data m_defaults;
 
-        float m_Q_smoothed;
-        float m_cutoff_Hz_smoothed;
-        /** Using atomics here because both the QT UI thread and the Mixer thread update these values */
         std::atomic<float> m_Q_current {};
+        float m_Q_smoothed;
+
         std::atomic<float> m_cutoff_Hz_current {};
+        float m_cutoff_Hz_smoothed;
+
         // x[n-1]: input sample per channel: One sample minus current
         std::array<float, FMOD_MAX_CHANNEL_WIDTH> state_1 {};
         // y[n-1]: output sample per channel: One sample minus current
