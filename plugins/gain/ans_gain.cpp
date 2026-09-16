@@ -1,6 +1,5 @@
 #include "ans_gain.hpp"
 
-#include "ans_dsp_common.hpp"
 #include "ans_fmod_dsp.hpp"
 #include "ans_gain_state.hpp"
 
@@ -26,8 +25,7 @@ namespace ans_gain
     static constexpr float PARAM_GAIN_DB_MAX = 10.0f;
     static constexpr float PARAM_GAIN_DB_MIN = -80.0f;
 
-    static constexpr float RAMP_TIME_MS = 5.8f;
-    static constexpr float RAMP_TIME_SECONDS = ans_dsp::ms_to_seconds(RAMP_TIME_MS);
+    static constexpr float SMOOTHING_TIME_MS = 5.8f;
 
     // PLUGIN DESCRIPTION
 
@@ -81,12 +79,12 @@ namespace ans_gain
         init_data.m_gain_db_default = PARAM_GAIN_DB_DEFAULT;
         init_data.m_gain_db_max = PARAM_GAIN_DB_MAX;
         init_data.m_gain_db_min = PARAM_GAIN_DB_MIN;
-        init_data.m_ramp_time_seconds = RAMP_TIME_SECONDS;
+        init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
-        unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
-        int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-        init_data.buffer_size = buffer_size_current;
-        init_data.samplerate = samplerate_current;
+        unsigned int buffer_size; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size);
+        init_data.buffer_size = buffer_size;
+        int samplerate; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate);
+        init_data.m_samplerate = samplerate;
 
         ANS_DSP_State* state = nullptr;
         return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);

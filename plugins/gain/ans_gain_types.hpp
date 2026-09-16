@@ -10,9 +10,9 @@ namespace ans_gain
         float m_gain_db_default;
         float m_gain_db_max;
         float m_gain_db_min;
-        float m_ramp_time_seconds;
+        float m_smoothing_time_ms;
 
-        int samplerate;
+        unsigned int m_samplerate;
         unsigned int buffer_size;
     };
 
@@ -22,7 +22,6 @@ namespace ans_gain
             : m_defaults(init_data)
             , m_gain_lin_current(ans_dsp::db_to_linear(m_defaults.m_gain_db_default))
             , m_gain_lin_target(m_gain_lin_current)
-            , m_samplerate(m_defaults.samplerate)
             , m_samples_to_target(0)
         {}
 
@@ -30,14 +29,12 @@ namespace ans_gain
 
         float m_gain_lin_current;
         float m_gain_lin_target;
-        int m_samplerate;
-        int m_samples_to_target;
+        unsigned int m_samples_to_target;
 
         void reset(const int samplerate)
         {
-            m_defaults.samplerate = samplerate;
+            m_defaults.m_samplerate = samplerate;
             m_gain_lin_current = m_gain_lin_target;
-            m_samplerate = samplerate;
             m_samples_to_target = 0;
         }
     };
