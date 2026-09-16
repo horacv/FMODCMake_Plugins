@@ -15,7 +15,7 @@ namespace ans_lpf_1p
     {
         const float cutoff_min = m_data.m_defaults.m_cutoff_Hz_min;
         const float cutoff_max = m_data.m_defaults.m_cutoff_Hz_max;
-        m_data.m_cutoff_Hz_current = std::clamp(value, cutoff_min, cutoff_max);
+        m_data.m_cutoff_Hz_current.store(std::clamp(value, cutoff_min, cutoff_max), std::memory_order::relaxed);
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer,

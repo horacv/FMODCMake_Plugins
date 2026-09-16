@@ -1,9 +1,9 @@
 #ifndef ANS_LPF_1P_TYPES_HPP
 #define ANS_LPF_1P_TYPES_HPP
 
-#include "ans_dsp_common.hpp"
 #include "fmod_common.h"
 #include <array>
+#include <atomic>
 
 namespace ans_lpf_1p
 {
@@ -18,17 +18,14 @@ namespace ans_lpf_1p
     struct ANS_DSP_State_Data {
         explicit ANS_DSP_State_Data(const ANS_DSP_Init_Data& init_data)
             : m_defaults(init_data)
-        {
-            m_defaults.m_cutoff_Hz_default = std::clamp(init_data.m_cutoff_Hz_default,
-                init_data.m_cutoff_Hz_min, init_data.m_cutoff_Hz_max);
-            m_cutoff_Hz_current = m_defaults.m_cutoff_Hz_default;
-        }
+            , m_cutoff_Hz_current(std::clamp(init_data.m_cutoff_Hz_default,init_data.m_cutoff_Hz_min, init_data.m_cutoff_Hz_max))
+        {}
 
         ANS_DSP_Init_Data m_defaults;
 
         // y[n-1]: previous low passed sample per channel
         std::array<float, FMOD_MAX_CHANNEL_WIDTH> lpf_prev {};
-        float m_cutoff_Hz_current;
+        std::atomic<float> m_cutoff_Hz_current;
 
         void reset()
         {
