@@ -18,7 +18,7 @@ namespace ans_lpf_1p
     struct ANS_DSP_State_Data {
         explicit ANS_DSP_State_Data(const ANS_DSP_Init_Data& init_data)
             : m_defaults(init_data)
-            , m_cutoff_Hz_current(std::clamp(init_data.m_cutoff_Hz_default,init_data.m_cutoff_Hz_min, init_data.m_cutoff_Hz_max))
+            , m_cutoff_Hz_current(m_defaults.m_cutoff_Hz_default)
         {}
 
         ANS_DSP_Init_Data m_defaults;
