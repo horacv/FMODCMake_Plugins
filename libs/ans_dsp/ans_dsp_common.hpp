@@ -117,6 +117,64 @@ namespace ans_dsp
     }
 
     /**
+     * Maps a unipolar value [0, 1] to bipolar [-1, 1]: 0 -> -1, 0.5 -> 0, 1 -> 1.
+     * Linear and unclamped; inputs outside [0, 1] map proportionally.
+     * Inverse of bipolar_to_unipolar.
+     *
+     * @param value The input value in the unipolar range [0, 1].
+     * @return The corresponding value in the bipolar range [-1, 1].
+     */
+    inline double unipolar_to_bipolar(const double value)
+    {
+        return value * 2.0 - 1.0;
+    }
+
+    /**
+     * Maps a bipolar value [-1, 1] to unipolar [0, 1]: -1 -> 0, 0 -> 0.5, 1 -> 1.
+     * Linear and unclamped; inputs outside [-1, 1] map proportionally.
+     * Inverse of unipolar_to_bipolar.
+     *
+     * @param value The bipolar value to be converted.
+     * @return The corresponding unipolar value.
+     */
+    inline double bipolar_to_unipolar(const double value)
+    {
+        return value * 0.5 + 0.5;
+    }
+
+    /**
+     * Converts a 32-bit unsigned integer state value to a unipolar double in the range [0, 1).
+     *
+     * The method maps the input `state` uniformly across the unipolar range by dividing
+     * it by the total number of possible 32-bit unsigned integer values.
+     *
+     * @param state The 32-bit unsigned integer value to be converted.
+     * @return A double value representing the unipolar equivalent of the input,
+     *         in the range [0, 1).
+     */
+    inline double uint32_unipolar(const uint32_t state)
+    {
+        constexpr double uint32_value_count = static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0;
+        return state / uint32_value_count;
+    }
+
+    /**
+     * Converts a 32-bit unsigned integer state value to a bipolar double in the range [-1, 1).
+     *
+     * The method first transforms the input `state` into a unipolar double value in the range [0, 1)
+     * using `uint32_unipolar`. It then maps the unipolar value to a bipolar range by applying
+     * `unipolar_to_bipolar`.
+     *
+     * @param state The 32-bit unsigned integer value to be converted.
+     * @return A double value representing the bipolar equivalent of the input,
+     *         in the range [-1, 1).
+     */
+    inline double uint32_bipolar(const uint32_t state)
+    {
+        return unipolar_to_bipolar(uint32_unipolar(state));
+    }
+
+    /**
      * Computes the angular cutoff frequency in radians per second, given a linear frequency in Hz and a sampling rate.
      *
      * The provided frequency is clamped to a safe range determined by a lower limit of 10 Hz and an upper limit slightly below half the sample rate

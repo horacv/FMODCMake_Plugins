@@ -50,7 +50,8 @@ DSP helper functions are implemented in a standalone testable shared library.
 │   ├── lpf_2p/           # Two-pole low-pass filter
 │   ├── hpf_2p/           # Two-pole high-pass filter
 │   ├── eq_4b/            # 4-band parametric EQ
-│   └── delay/            # Delay / echo
+│   ├── delay/            # Delay / echo
+│   └── tone_generator/   # Tone generator (Sine, Saw, Triangle, Square, Noise)
 ├── fmod_project/         # FMOD Studio project files (empty, ignored by default)
 └── tools/                # Python scripts for setting up the FMOD API
 ```
@@ -65,6 +66,7 @@ DSP helper functions are implemented in a standalone testable shared library.
 | `lpf_2p` / `hpf_2p` | Two-pole (biquad) low-pass and high-pass filters. |
 | `eq_4b` | 4-band parametric EQ using cascaded biquads (low shelf, two peaking bands, high shelf). |
 | `delay` | Delay/echo with feedback, built on a circular ring buffer. |
+| `tone_generator` | Tone generator producing sine, saw, triangle, square waves and white noise. |
 
 ## Adding a New Plugin
 
