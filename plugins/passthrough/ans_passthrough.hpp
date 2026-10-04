@@ -10,7 +10,7 @@ namespace ans_passthrough
     // PARAMETERS
 
     enum DSP_PARAMETER_INDEX {
-        PARAM_CUTOFF = 0,
+        PARAM_FLOAT = 0,
         PARAM_INT,
         PARAM_INT_ENUM,
         PARAM_BOOL,
@@ -21,7 +21,7 @@ namespace ans_passthrough
         PARAM_COUNT
     };
 
-    static FMOD_DSP_PARAMETER_DESC param_cutoff;
+    static FMOD_DSP_PARAMETER_DESC param_float;
     static FMOD_DSP_PARAMETER_DESC param_int;
     static FMOD_DSP_PARAMETER_DESC param_int_enum;
     static FMOD_DSP_PARAMETER_DESC param_bool;
@@ -30,7 +30,7 @@ namespace ans_passthrough
     /* Add more parameters here ...*/
 
     inline FMOD_DSP_PARAMETER_DESC* param_description[PARAM_COUNT] {
-        &param_cutoff,
+        &param_float,
         &param_int,
         &param_int_enum,
         &param_bool,

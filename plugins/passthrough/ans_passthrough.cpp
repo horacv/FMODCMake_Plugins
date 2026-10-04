@@ -102,7 +102,7 @@ namespace ans_passthrough
     extern "C" {
         F_EXPORT FMOD_DSP_DESCRIPTION* F_CALL FMODGetDSPDescription()
         {
-            init_param_desc_float(param_cutoff, PARAM_FLOAT_NAME, PARAM_FLOAT_LABEL, PARAM_FLOAT_DESC, PARAM_FLOAT_MIN, PARAM_FLOAT_MAX, PARAM_FLOAT_DEFAULT);
+            init_param_desc_float(param_float, PARAM_FLOAT_NAME, PARAM_FLOAT_LABEL, PARAM_FLOAT_DESC, PARAM_FLOAT_MIN, PARAM_FLOAT_MAX, PARAM_FLOAT_DEFAULT);
             init_param_desc_int(param_int, PARAM_INT_NAME, PARAM_INT_LABEL, PARAM_INT_DESC, PARAM_INT_MIN, PARAM_INT_MAX, PARAM_INT_DEFAULT, PARAM_INT_INF, nullptr);
             init_param_desc_int_enumerated(param_int_enum, PARAM_ENUM_NAME, PARAM_ENUM_LABEL, PARAM_ENUM_DESC, PARAM_ENUM_DEFAULT, int_enum_param_values);
             init_param_desc_bool(param_bool, PARAM_BOOL_NAME, PARAM_BOOL_LABEL, PARAM_BOOL_DESC, PARAM_BOOL_DEFAULT, bool_param_values);
@@ -201,7 +201,7 @@ namespace ans_passthrough
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        if (index == PARAM_CUTOFF)
+        if (index == PARAM_FLOAT)
         {
             state->set_param_float(value);
             return FMOD_OK;
@@ -278,7 +278,7 @@ namespace ans_passthrough
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        if (index == PARAM_CUTOFF)
+        if (index == PARAM_FLOAT)
         {
             *value = state->get_param_float();
             return write_float_value_string(value_str, *value);
