@@ -2,6 +2,7 @@
 #define FMOD_PLUGINS_ANS_DSP_NOISE_HPP
 
 #include <cassert>
+#include <cstdint>
 
 namespace ans_dsp
 {
