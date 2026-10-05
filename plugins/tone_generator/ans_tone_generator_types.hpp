@@ -42,10 +42,14 @@ namespace ans_tone_generator
             , m_param_oscillator_type(init_data.m_oscillator_type_default)
             , m_freq_smoothing_coefficient(0.f)
             , m_gain_smoothing_coefficient(0.f)
-            , m_increment(ans_dsp::get_phase_increment(m_defaults.m_freq_Hz_default, m_defaults.samplerate))
+            , m_phase_increment(ans_dsp::get_phase_increment(m_defaults.m_freq_Hz_default, m_defaults.samplerate))
             , m_counter(0.0)
         {
-            calculate_smoothing_coefficient();
+            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.buffer_size, static_cast<float>(m_defaults.samplerate));
+            m_freq_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(buffer_duration_ms, m_defaults.m_smoothing_time_ms);
+
+            const float sample_duration_ms = ans_dsp::samples_to_ms(1u, static_cast<float>(m_defaults.samplerate));
+            m_gain_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(sample_duration_ms, m_defaults.m_smoothing_time_ms);
         }
 
         ANS_DSP_Init_Data m_defaults;
@@ -58,18 +62,9 @@ namespace ans_tone_generator
         float m_freq_smoothing_coefficient;
         float m_gain_smoothing_coefficient;
 
-        std::atomic<double> m_increment;
+        double m_phase_increment;
         uint32_t m_noise_state = 0x9E3779B9; // Seed
         double m_counter;
-
-        void calculate_smoothing_coefficient()
-        {
-            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.buffer_size, static_cast<float>(m_defaults.samplerate));
-            m_freq_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(buffer_duration_ms, m_defaults.m_smoothing_time_ms);
-
-            const float sample_duration_ms = ans_dsp::samples_to_ms(1u, static_cast<float>(m_defaults.samplerate));
-            m_gain_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(sample_duration_ms, m_defaults.m_smoothing_time_ms);
-        }
     };
 }
 

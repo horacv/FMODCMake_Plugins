@@ -78,6 +78,40 @@ namespace ans_dsp
     }
 
     /**
+     * PolyBLEP (polynomial band-limited step) correction for a jump of height 2 at counter 0.
+     * Returns a value to combine with the naive waveform: subtract for a falling jump
+     * (+1 to -1), add for a rising jump (-1 to +1). Nonzero only within one sample of the jump.
+     *
+     * References:
+     *   V. Valimaki, A. Huovilainen, "Antialiasing Oscillators in Subtractive Synthesis",
+     *     IEEE Signal Processing Magazine, vol. 24, no. 2, 2007.
+     *   https://www.martin-finke.de/articles/audio-plugins-018-polyblep-oscillator/
+     *   https://github.com/martinfinke/PolyBLEP/blob/master/PolyBLEP.cpp
+     *
+     * @param counter   Position in the cycle, [0, 1). For a jump elsewhere, shift it to 0 first.
+     * @param increment Phase increment per sample, [0, 0.5).
+     *
+     */
+    inline double poly_blep(const double counter, const double increment)
+    {
+        // First sample after the jump.
+        if (counter < increment)
+        {
+            const double t = counter / increment; // distance after the jump, in samples: [0, 1)
+            return t + t - t * t - 1.0;
+        }
+
+        // Last sample before the jump.
+        if (counter > 1.0 - increment)
+        {
+            const double t = (counter - 1.0) / increment; // distance before the jump: (-1, 0)
+            return t * t + t + t + 1.0;
+        }
+
+        return 0.0;
+    }
+
+    /**
      * Generates a sawtooth waveform value based on the provided counter and scalar.
      *
      * This function computes the value of a normalized unipolar sawtooth waveform,
@@ -93,6 +127,20 @@ namespace ans_dsp
     inline double generate_saw(const double counter, const float scalar = 1.f)
     {
         return unipolar_to_bipolar(counter) * scalar;
+    }
+
+    /**
+     * Generates a sawtooth waveform with PolyBLEP (polynomial band-limited step) correction to reduce aliasing.
+     *
+     * Smooths the jump at counter 0 over about one sample on each side.
+     *
+     * @param counter   Position in the cycle, [0, 1).
+     * @param increment Phase increment per sample, [0, 0.5). Must match the counter's step.
+     * @param scalar    Amplitude, applied after the correction.
+     */
+    inline double generate_saw_corrected(const double counter, const double increment, const float scalar = 1.f)
+    {
+        return (generate_saw(counter) - poly_blep(counter, increment)) * scalar;
     }
 
     /**
@@ -155,6 +203,21 @@ namespace ans_dsp
     {
         const double saw = generate_saw(counter);
         return (saw >= 0.0 ? 1.0 : -1.0) * scalar;
+    }
+
+    /**
+     * Generates a square waveform with PolyBLEP (polynomial band-limited step) correction to reduce aliasing.
+     * Smooths both jumps: the falling edge at counter 0 and the rising edge at 0.5.
+     *
+     * @param counter   Position in the cycle, [0, 1).
+     * @param increment Phase increment per sample, [0, 0.5). Must match the counter's step.
+     * @param scalar    Amplitude, applied after the corrections.
+     */
+    inline double generate_square_corrected(const double counter, const double increment, const float scalar = 1.f)
+    {
+        // poly_blep corrects a jump at counter 0. Shift by half a cycle so the rising edge at 0.5 lands at 0.
+        const double counter_shifted = counter >= 0.5 ? counter - 0.5 : counter + 0.5;
+        return (generate_square(counter) - poly_blep(counter, increment) + poly_blep(counter_shifted, increment)) * scalar;
     }
 }
 #endif
