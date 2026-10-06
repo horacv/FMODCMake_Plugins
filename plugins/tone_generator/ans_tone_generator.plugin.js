@@ -13,7 +13,6 @@ studio.plugins.registerPluginDescription("ANS Tone Generator", {
         spacing: 20,
         isFramed: false,
         items: [
-            { deckWidgetType: studio.ui.deckWidgetType.InputMeter },
             {
                 deckWidgetType: studio.ui.deckWidgetType.Layout,
                 layout: studio.ui.layoutType.VBoxLayout,
@@ -44,7 +43,6 @@ studio.plugins.registerPluginDescription("ANS Tone Generator", {
                     { deckWidgetType: studio.ui.deckWidgetType.Dial, color: "#ff3537", row: 0, column: 1, binding: "Gain", },
                 ],
             },
-            { deckWidgetType: studio.ui.deckWidgetType.OutputMeter },
         ]
     }
 });

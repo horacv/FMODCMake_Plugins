@@ -39,7 +39,7 @@ DSP helper functions are implemented in a standalone testable shared library.
 .
 ├── CMakeLists.txt        # Main CMake configuration
 ├── libs/                 # Helper libraries for DSP processing
-│   ├── ans_dsp/          # Base DSP functionality
+│   ├── ans_dsp/          # Base DSP functionality (Common, Filters, Noise, Oscillators, Smoothing)
 │   ├── ans_fmod_dsp/     # FMOD-specific DSP utilities
 │   └── fmod/             # FMOD API headers and libraries
 ├── plugins/              # DSP plugin implementations
@@ -89,8 +89,12 @@ DSP helper functions are implemented in a standalone testable shared library.
 - [FMOD Studio API Getting Started](https://www.fmod.com/docs/2.03/api/studio-api-getting-started.html)
 - [CMake Documentation](https://cmake.org/)
 - [Audio EQ Cookbook (Bristow-Johnson)](https://www.w3.org/TR/audio-eq-cookbook/#formulae) — reference for biquad coefficient math used throughout `eq_4b` and the filter plugins
-- [Designing Audio Effect Plugins in C++ (Pirkle)](https://www.routledge.com/Designing-Audio-Effect-Plugins-in-C-For-AAX-AU-and-VST3-with-DSP-Theory/Pirkle/p/book/9781138591936) - reference for `delay` math and circular buffers
-- [CMake](https://cmake.org/)
+- [Designing Audio Effect Plugins in C++ (Pirkle)](https://www.routledge.com/Designing-Audio-Effect-Plugins-in-C-For-AAX-AU-and-VST3-with-DSP-Theory/Pirkle/p/book/9781138591936) - reference for `delay` math and circular buffers, as well as the LFP algorithms used for the `tone generator` oscillators.
+- [One-Pole IIR Filter Formulas (DSP StackExchange)](https://dsp.stackexchange.com/questions/54086/single-pole-iir-low-pass-filter-which-is-the-correct-formula-for-the-decay-coe)
+- [Subnormal Numbers (YouTube - Fading Audio is ROUGH on CPUs)](https://www.youtube.com/watch?v=y-NOz94ZEOA&t=12s)
+- [Subnormal Numbers (Wikipedia)](https://en.wikipedia.org/wiki/Subnormal_number)
+- [PolyBLEP Oscillator (Martin Finke)](https://www.martin-finke.de/articles/audio-plugins-018-polyblep-oscillator/)
+- [PolyBLEP GitHub](https://github.com/martinfinke/PolyBLEP/blob/master/PolyBLEP.cpp)
 - [CMake Projects in Visual Studio](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170)
 - [Create a CMake hello world project in VS Code](https://code.visualstudio.com/docs/cpp/cmake-quickstart)
 - [Xcode generator in CMake](https://cmake.org/cmake/help/latest/generator/Xcode.html)
