@@ -10,7 +10,7 @@ A CMake template project for developing custom FMOD DSP plugins in C++.
 
 This project provides a structure for creating cross-platform FMOD DSP plugins in C++.\
 It contains the boilerplate code required to interface with FMOD's DSP callback API, and defines a clean separation between interface, state, and data.
-DSP helper functions are implemented in a standalone testable shared library.
+DSP helper functions are implemented in standalone libraries: a header-only DSP math library (`libs/ans_dsp`) and a static library of FMOD helpers (`libs/ans_fmod_dsp`).
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ DSP helper functions are implemented in a standalone testable shared library.
    git clone https://github.com/horacv/FmodCMake_Plugins.git
    cd FmodCMake_Plugins
    ```
-2. Download the [FMOD Core API](https://www.fmod.com/download) and set it up using the scripts in `tools/` (or place it manually — see `libs/fmod/`).
+2. Download and install the FMOD Core API with `tools/setup_fmod_api.py` (see `tools/readme.md`), or [download it manually](https://www.fmod.com/download) and copy the files as described in `libs/fmod/core/readme.md`.
 3. Configure and build with CMake (see commands below).
 
 ### CMake build commands
@@ -64,7 +64,7 @@ DSP helper functions are implemented in a standalone testable shared library.
 | `gain` | Simple gain/trim with parameter smoothing. |
 | `lpf_1p` / `hpf_1p` | One-pole low-pass and high-pass filters. |
 | `lpf_2p` / `hpf_2p` | Two-pole (biquad) low-pass and high-pass filters. |
-| `eq_4b` | 4-band parametric EQ using cascaded biquads (low shelf, two peaking bands, high shelf). |
+| `eq_4b` | 4-band parametric EQ using cascaded biquads (HPF/low shelf, two peaking bands, LPF/high shelf). |
 | `delay` | Delay/echo with feedback, built on a circular ring buffer. |
 | `tone_generator` | Tone generator producing sine, saw, triangle, square waves and white noise. |
 
@@ -81,7 +81,7 @@ DSP helper functions are implemented in a standalone testable shared library.
 1. Open FMOD Studio.
 2. Create a new project or open an existing one.
 3. Go to Edit -> Preferences -> Assets.
-4. In the Plug-ins folder input the folder where the .dlls of your plugins are built, for example: `C:/FmodCMake_Plugins/build/debug`.
+4. In the Plug-ins folder, enter the folder where your plugin binaries (`.dll`/`.dylib`/`.so`) and their `.plugin.js` files are built. Each plugin is built into its own folder, for example `C:/FmodCMake_Plugins/build/debug/plugins/gain/` (with Visual Studio generators, a further `Debug/` or `Release/` subfolder).
 5. Enjoy.
 
 ## Official Documentation and Helpful Links
@@ -89,7 +89,7 @@ DSP helper functions are implemented in a standalone testable shared library.
 - [FMOD Studio API Getting Started](https://www.fmod.com/docs/2.03/api/studio-api-getting-started.html)
 - [CMake Documentation](https://cmake.org/)
 - [Audio EQ Cookbook (Bristow-Johnson)](https://www.w3.org/TR/audio-eq-cookbook/#formulae) — reference for biquad coefficient math used throughout `eq_4b` and the filter plugins
-- [Designing Audio Effect Plugins in C++ (Pirkle)](https://www.routledge.com/Designing-Audio-Effect-Plugins-in-C-For-AAX-AU-and-VST3-with-DSP-Theory/Pirkle/p/book/9781138591936) - reference for `delay` math and circular buffers, as well as the LFP algorithms used for the `tone generator` oscillators.
+- [Designing Audio Effect Plugins in C++ (Pirkle)](https://www.routledge.com/Designing-Audio-Effect-Plugins-in-C-For-AAX-AU-and-VST3-with-DSP-Theory/Pirkle/p/book/9781138591936) - reference for `delay` math and circular buffers, as well as the formulas used for the `tone_generator` oscillators.
 - [One-Pole IIR Filter Formulas (DSP StackExchange)](https://dsp.stackexchange.com/questions/54086/single-pole-iir-low-pass-filter-which-is-the-correct-formula-for-the-decay-coe)
 - [Subnormal Numbers (YouTube - Fading Audio is ROUGH on CPUs)](https://www.youtube.com/watch?v=y-NOz94ZEOA&t=12s)
 - [Subnormal Numbers (Wikipedia)](https://en.wikipedia.org/wiki/Subnormal_number)
