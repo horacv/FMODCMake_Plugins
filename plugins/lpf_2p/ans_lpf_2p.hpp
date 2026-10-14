@@ -1,5 +1,5 @@
-#ifndef ANS_LPF_2P_PLUGIN_HPP
-#define ANS_LPF_2P_PLUGIN_HPP
+#ifndef ANS_LPF_2P_HPP
+#define ANS_LPF_2P_HPP
 
 #include "fmod_common.h"
 #include "fmod_dsp.h"

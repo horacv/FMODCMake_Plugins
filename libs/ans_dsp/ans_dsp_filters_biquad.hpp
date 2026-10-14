@@ -43,7 +43,7 @@ namespace ans_dsp
         // α = sin(ωc) / (2 · Q)
         const float alpha = sin(wc) / (2 * std::clamp(q, MIN_Q, MAX_Q));
 
-        // A = sqrt(10^(gain_db / 40))
+        // A = sqrt(10^(gain_db / 20))
         const float A = db_to_linear_sqrt(gain_db);
 
         // a0 = (A + 1) + (A − 1) · cos(ωc) + 2 · sqrt(A) · α
@@ -78,7 +78,7 @@ namespace ans_dsp
      * @param q The quality factor of the filter. Default value is 0.7071f. This parameter affects the bandwidth of the filter.
      * @return A BiquadCoefficients structure containing the calculated coefficients: a0, a1, a2, b0, b1, and b2.
      */
-    inline BiquadCoefficients lpf_filter_coefficients(const float cutoff_Hz, const float samplerate_Hz, const float q = 0.7071f)
+    inline BiquadCoefficients low_pass_coefficients(const float cutoff_Hz, const float samplerate_Hz, const float q = 0.7071f)
     {
         // ωc = 2π · fc / fs;
         const float wc = angular_cutoff_from_Hz(cutoff_Hz, samplerate_Hz);
@@ -136,7 +136,7 @@ namespace ans_dsp
         // a0 = (A + 1) - (A − 1) · cos(ωc) + 2 · sqrt(A) · α
         const float a0 = A + 1 - (A - 1) * cos(wc) + 2 * sqrt(A) * alpha;
 
-        // a1 = 2 · ((A − 1) + (A - 1) · cos(ωc))
+        // a1 = 2 · ((A − 1) − (A + 1) · cos(ωc))
         const float a1 = 2 * (A - 1 - (A + 1) * cos(wc));
 
         // a2 = (A + 1) - (A − 1) · cos(ωc) - 2 · sqrt(A) · α
@@ -145,7 +145,7 @@ namespace ans_dsp
         // b0 = A · ((A + 1) + (A − 1) · cos(ωc) + 2 · sqrt(A) · α)
         const float b0 = A * (A + 1 + (A - 1) * cos(wc) + 2 * sqrt(A) * alpha);
 
-        // b1 = -2 · A · ((A - 1) - (A + 1) · cos(ωc))
+        // b1 = -2 · A · ((A - 1) + (A + 1) · cos(ωc))
         const float b1 = -2 * A * (A - 1 + (A + 1) * cos(wc));
 
         // b2 = A · ((A + 1) + (A − 1) · cos(ωc) - 2 · sqrt(A) · α)
@@ -165,7 +165,7 @@ namespace ans_dsp
      * @param q The quality factor of the filter. Default value is 0.7071f. This parameter affects the bandwidth of the filter.
      * @return A BiquadCoefficients structure containing the calculated coefficients: a0, a1, a2, b0, b1, and b2.
      */
-    inline BiquadCoefficients hpf_filter_coefficients(const float cutoff_Hz, const float samplerate_Hz, const float q = 0.7071f)
+    inline BiquadCoefficients high_pass_coefficients(const float cutoff_Hz, const float samplerate_Hz, const float q = 0.7071f)
     {
         // ωc = 2π · fc / fs;
         const float wc = angular_cutoff_from_Hz(cutoff_Hz, samplerate_Hz);
@@ -227,13 +227,13 @@ namespace ans_dsp
         // a2 = 1 - α / A
         const float a2 = 1.0f - alpha / A;
 
-        // b0 = 1 + a · A
+        // b0 = 1 + α · A
         const float b0 = 1.0f + alpha * A;
 
         // b1 = -2 · cos(ωc)
         const float b1 = a1;
 
-        // b2 = 1 - a · A
+        // b2 = 1 - α · A
         const float b2 = 1.0f - alpha * A;
 
         return {.a0 = a0, .a1 = a1, .a2 = a2, .b0 = b0, .b1 = b1, .b2 = b2};

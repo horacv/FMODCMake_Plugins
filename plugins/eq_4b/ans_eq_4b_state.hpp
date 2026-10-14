@@ -1,7 +1,6 @@
 #ifndef ANS_EQ_4B_STATE_HPP
 #define ANS_EQ_4B_STATE_HPP
 
-#include "fmod_common.h"
 #include "ans_eq_4b_types.hpp"
 
 namespace ans_eq_4b
@@ -22,7 +21,7 @@ namespace ans_eq_4b
         [[nodiscard]] float get_gain_db(BAND band) const;
         [[nodiscard]] float get_Q(BAND band) const;
         FMOD_RESULT process(const float* in_buffer, float* out_buffer,
-            unsigned int buffer_size, int samplerate,  int in_channels, int out_channels);
+            unsigned int buffer_size, int in_channels, int out_channels);
 
     private:
         // Defaults

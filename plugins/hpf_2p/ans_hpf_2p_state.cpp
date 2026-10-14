@@ -24,14 +24,14 @@ namespace ans_hpf_2p
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer,
-        const unsigned int buffer_size, const int samplerate, const int in_channels, const int out_channels)
+        const unsigned int buffer_size, const unsigned int samplerate, const int in_channels, const int out_channels)
     {
         if (!(in_buffer && out_buffer && out_channels))
         {
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        const int num_channels = std::clamp(std::min(in_channels, out_channels), 0, FMOD_MAX_CHANNEL_WIDTH);
+        const unsigned int num_channels = std::clamp(std::min(in_channels, out_channels), 0, FMOD_MAX_CHANNEL_WIDTH);
         assert(num_channels == std::min(in_channels, out_channels) && "channel count exceeds FMOD_MAX_CHANNEL_WIDTH");
 
         // Cutoff Smoothing - Once per block is enough
@@ -45,7 +45,7 @@ namespace ans_hpf_2p
         // TDF-II formula: https://ccrma.stanford.edu/~jos/fp/Transposed_Direct_Forms.html
 
         const auto [a0, a1, a2, b0, b1, b2] =
-            ans_dsp::hpf_filter_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(samplerate), m_data.m_Q_smoothed).normalized();
+            ans_dsp::high_pass_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(samplerate), m_data.m_Q_smoothed).normalized();
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int buffer_index = 0; buffer_index < buffer_size; ++buffer_index)
@@ -58,13 +58,13 @@ namespace ans_hpf_2p
                 const float input = in_buffer[sample];
 
                 // y[n] (Output) = x[n-1] + |b0| · x
-                const float output = m_data.state_1[channel_index] + b0 * input;
+                const float output = m_data.m_state_1[channel_index] + b0 * input;
 
                 // x[n-1] = y[n-1] + |b1| · x[n] - |a1| · y[n]
-                m_data.state_1[channel_index] = ans_dsp::flush_subnormal_to_zero(m_data.state_2[channel_index] + b1 * input - a1 * output);
+                m_data.m_state_1[channel_index] = ans_dsp::flush_subnormal_to_zero(m_data.m_state_2[channel_index] + b1 * input - a1 * output);
 
                 // y[n-1] = |b2| · x[n] - |a2| · y[n]
-                m_data.state_2[channel_index] = ans_dsp::flush_subnormal_to_zero(b2 * input - a2 * output);
+                m_data.m_state_2[channel_index] = ans_dsp::flush_subnormal_to_zero(b2 * input - a2 * output);
 
                 out_buffer[sample] = output;
             }

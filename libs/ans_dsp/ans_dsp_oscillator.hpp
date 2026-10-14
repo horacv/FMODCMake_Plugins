@@ -1,8 +1,9 @@
-#ifndef FMOD_PLUGINS_ANS_DSP_OSCILLATOR_HPP
-#define FMOD_PLUGINS_ANS_DSP_OSCILLATOR_HPP
+#ifndef ANS_DSP_OSCILLATOR_HPP
+#define ANS_DSP_OSCILLATOR_HPP
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <numbers>
 
 namespace ans_dsp
@@ -27,35 +28,36 @@ namespace ans_dsp
      *         that corresponds to the given frequency.
      * @note Formula: inc = fo / fs
      */
-    inline double get_phase_increment(const float freq_Hz, const unsigned int samplerate_Hz)
+    inline double get_phase_increment(const double freq_Hz, const unsigned int samplerate_Hz)
     {
         if (samplerate_Hz == 0)
         {
             assert(!"samplerate must be positive");
-            return 0.f;
+            return 0.0;
         }
+        const auto samplerate_Hz_double = static_cast<double>(samplerate_Hz);
 
         // Stay just below Nyquist: inc < 0.5 guarantees a single subtraction always wraps the counter.
-        constexpr float nyquist_safety_factor = 0.99f;
-        const float upper_limit_Hz = static_cast<float>(samplerate_Hz) * 0.5f * nyquist_safety_factor;
-        const double clamped_freq_Hz = std::clamp(freq_Hz, 0.f, upper_limit_Hz);
+        constexpr double nyquist_safety_factor = 0.99f;
+        const double upper_limit_Hz = samplerate_Hz_double * 0.5 * nyquist_safety_factor;
+        const double clamped_freq_Hz = std::clamp(freq_Hz, 0.0, upper_limit_Hz);
 
-        return clamped_freq_Hz / static_cast<double>(samplerate_Hz);
+        return clamped_freq_Hz / samplerate_Hz_double;
     }
 
     /**
      * Advances a modulo counter by a specified increment while ensuring both the counter
-     * and increment are clamped to valid ranges, and wraps the result within the range [0.0, 1.0).
+     * and increment are clamped to valid ranges, and wraps the result within the range [0.0, 1.0].
      *
      * This function is typically used in digital signal processing to manage phase counters
      * for oscillators, ensuring that the counter remains within a normalized range suitable
      * for generating periodic waveforms.
      *
-     * @param counter The current value of the modulo counter. It must be within the range [0.0, 1.0).
+     * @param counter The current value of the modulo counter. It must be within the range [0.0, 1.0].
      *                If it falls outside this range, it will be clamped to fit within.
-     * @param increment The increment value to add to the counter. It must be in the range [0.0, 0.5).
+     * @param increment The increment value to add to the counter. It must be in the range [0.0, 0.5].
      *                  Values outside this range will be clamped accordingly.
-     * @return The updated counter value after applying the increment, wrapped into the range [0.0, 1.0).
+     * @return The updated counter value after applying the increment, wrapped into the range [0.0, 1.0].
      */
     inline double modulo_counter_advance_wrap(const double counter, const double increment)
     {
@@ -118,13 +120,13 @@ namespace ans_dsp
      * converts it to a bipolar representation, and scales the result by the given scalar.
      *
      * @param counter The current value of the phase counter, expected to be in the
-     *                normalized range [0.0, 1.0). Values outside this range may produce
+     *                normalized range [0.0, 1.0]. Values outside this range may produce
      *                undefined behavior.
      * @param scalar An optional scaling factor to modulate the waveform amplitude.
      *               Defaults to 1.0.
      * @return The scaled bipolar sawtooth waveform value as a double.
      */
-    inline double generate_saw(const double counter, const float scalar = 1.f)
+    inline double generate_saw(const double counter, const double scalar = 1.0)
     {
         return unipolar_to_bipolar(counter) * scalar;
     }
@@ -138,7 +140,7 @@ namespace ans_dsp
      * @param increment Phase increment per sample, [0, 0.5). Must match the counter's step.
      * @param scalar    Amplitude, applied after the correction.
      */
-    inline double generate_saw_corrected(const double counter, const double increment, const float scalar = 1.f)
+    inline double generate_saw_corrected(const double counter, const double increment, const double scalar = 1.0)
     {
         return (generate_saw(counter) - poly_blep(counter, increment)) * scalar;
     }
@@ -150,12 +152,12 @@ namespace ans_dsp
      * as the phase input. The sawtooth waveform is scaled by π, the sine of the resulting angle is
      * calculated, and the final result is scaled by the given scalar.
      *
-     * @param counter The current value of the phase counter, expected to be in the normalized range [0.0, 1.0).
+     * @param counter The current value of the phase counter, expected to be in the normalized range [0.0, 1.0].
      *                Values outside this range may produce undefined behavior.
      * @param scalar An optional scaling factor to modulate the waveform amplitude. Defaults to 1.0.
      * @return The scaled sine waveform value as a double.
      */
-    inline double generate_sine(const double counter, const float scalar = 1.f)
+    inline double generate_sine(const double counter, const double scalar = 1.0)
     {
         const double angle = generate_saw(counter) * std::numbers::pi_v<double>;
         return std::sin(angle) * scalar;
@@ -175,12 +177,12 @@ namespace ans_dsp
      *     https://en.wikipedia.org/wiki/Triangle_wave
      *
      * @param counter The current value of the phase counter, expected to be in the normalized
-     *                range [0.0, 1.0). Values outside this range may produce undefined behavior.
+     *                range [0.0, 1.0]. Values outside this range may produce undefined behavior.
      * @param scalar An optional scaling factor to modulate the waveform amplitude. Defaults to 1.0.
      * @return The scaled triangle waveform value as a double.
      * @note Formula: triangle = 2 * |bipolar saw| - 1.
      */
-    inline double generate_triangle(const double counter, const float scalar = 1.f)
+    inline double generate_triangle(const double counter, const double scalar = 1.0)
     {
         const double saw = generate_saw(counter);
         return (2 * std::abs(saw) - 1) * scalar;
@@ -193,13 +195,13 @@ namespace ans_dsp
      * a sawtooth waveform generator. Positive values produce 1.0 * scalar, and negative
      * values produce -1.0 * scalar.
      *
-     * @param counter The phase counter input, typically within the range [0.0, 1.0).
+     * @param counter The phase counter input, typically within the range [0.0, 1.0].
      *                This represents the phase progression of the waveform.
      * @param scalar An optional amplitude scaling factor. Default value is 1.0.
      *               Used to scale the output waveform's amplitude.
      * @return The square wave value as a double, scaled by the amplitude scalar.
      */
-    inline double generate_square(const double counter, const float scalar = 1.f)
+    inline double generate_square(const double counter, const double scalar = 1.0)
     {
         const double saw = generate_saw(counter);
         return (saw >= 0.0 ? 1.0 : -1.0) * scalar;
@@ -213,7 +215,7 @@ namespace ans_dsp
      * @param increment Phase increment per sample, [0, 0.5). Must match the counter's step.
      * @param scalar    Amplitude, applied after the corrections.
      */
-    inline double generate_square_corrected(const double counter, const double increment, const float scalar = 1.f)
+    inline double generate_square_corrected(const double counter, const double increment, const double scalar = 1.0)
     {
         // poly_blep corrects a jump at counter 0. Shift by half a cycle so the rising edge at 0.5 lands at 0.
         const double counter_shifted = counter >= 0.5 ? counter - 0.5 : counter + 0.5;

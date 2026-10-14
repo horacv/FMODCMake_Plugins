@@ -4,7 +4,8 @@ add_library(ans_passthrough SHARED
         ans_passthrough.cpp
         ans_passthrough.hpp
         ans_passthrough_state.cpp
-        ans_passthrough_state.hpp)
+        ans_passthrough_state.hpp
+        ans_passthrough_types.hpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ans_dsp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ans_fmod_dsp)

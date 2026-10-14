@@ -55,8 +55,8 @@ namespace ans_dsp
      * Similarly, if the difference between the target and the smoothed value is
      * within the specified tolerance, the smoothed value is directly set to the target.
      *
-     * @param in_target The target value to interpolate towards.
-     * @param in_smoothing_coefficient The smoothing coefficient, a value between 0.0 and 1.0,
+     * @param target The target value to interpolate towards.
+     * @param smoothing_coefficient The smoothing coefficient, a value between 0.0 and 1.0,
      *                                  where higher values result in slower smoothing.
      * @param inout_smoothed A reference to the current smoothed value, which is updated
      *                       by this method.
@@ -64,18 +64,18 @@ namespace ans_dsp
      *                  enough to the target. Defaults to 0.1.
      * @return True if the smoothed value was updated, false otherwise.
      */
-    inline bool interpolate_with_coefficient(const float in_target, const float in_smoothing_coefficient, float& inout_smoothed, const float tolerance = 0.1f)
+    inline bool interpolate_with_coefficient(const float target, const float smoothing_coefficient, float& inout_smoothed, const float tolerance = 0.1f)
     {
-        if (in_target == inout_smoothed)
+        if (target == inout_smoothed)
         {
             return false;
         }
-        if (std::abs(in_target - inout_smoothed) <= tolerance)
+        if (std::abs(target - inout_smoothed) <= tolerance)
         {
-            inout_smoothed = in_target;
-            return false;
+            inout_smoothed = target;
+            return true;
         }
-        inout_smoothed += (in_target - inout_smoothed) * (1.0f - in_smoothing_coefficient);
+        inout_smoothed += (target - inout_smoothed) * (1.0f - smoothing_coefficient);
         return true;
     }
 }

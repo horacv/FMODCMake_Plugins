@@ -57,7 +57,7 @@ namespace ans_delay
 
     void ANS_DSP_State::start_fading_out()
     {
-        m_data.playback_state = ANS_DSP_ProcessingState::FadingOut;
+        m_data.m_playback_state = ANS_DSP_ProcessingState::FADING_OUT;
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer, const unsigned int buffer_size, const int in_channels, const int out_channels)
@@ -134,7 +134,7 @@ namespace ans_delay
         if (is_fading_out())
         {
             const bool is_below_threshold = loudest_delay_sample_in_buffer < ans_dsp::db_to_linear(m_data.m_defaults.m_min_threshold_db);
-            m_data.playback_state = is_below_threshold ? ANS_DSP_ProcessingState::NotActive : ANS_DSP_ProcessingState::FadingOut;
+            m_data.m_playback_state = is_below_threshold ? ANS_DSP_ProcessingState::NOT_ACTIVE : ANS_DSP_ProcessingState::FADING_OUT;
         }
 
         return FMOD_OK;

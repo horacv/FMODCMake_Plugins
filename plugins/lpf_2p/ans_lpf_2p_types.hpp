@@ -18,7 +18,7 @@ namespace ans_lpf_2p
         float m_cutoff_Hz_max;
         float m_cutoff_Hz_min;
         float m_smoothing_time_ms;
-        
+
         unsigned int buffer_size;
         unsigned int samplerate;
     };
@@ -32,7 +32,9 @@ namespace ans_lpf_2p
             , m_cutoff_Hz_current(m_defaults.m_cutoff_Hz_default)
             , m_cutoff_Hz_smoothed(m_cutoff_Hz_current)
             , m_smoothing_coefficient(0)
-        {}
+        {
+            calculate_smoothing_coefficient();
+        }
 
         ANS_DSP_Init_Data m_defaults;
 
@@ -43,9 +45,9 @@ namespace ans_lpf_2p
         float m_cutoff_Hz_smoothed;
 
         // x[n-1]: input sample per channel: One sample minus current
-        std::array<float, FMOD_MAX_CHANNEL_WIDTH> state_1 {};
+        std::array<float, FMOD_MAX_CHANNEL_WIDTH> m_state_1 {};
         // y[n-1]: output sample per channel: One sample minus current
-        std::array<float, FMOD_MAX_CHANNEL_WIDTH> state_2 {};
+        std::array<float, FMOD_MAX_CHANNEL_WIDTH> m_state_2 {};
 
         float m_smoothing_coefficient;
 
@@ -56,8 +58,10 @@ namespace ans_lpf_2p
 
             m_Q_smoothed = m_Q_current.load(std::memory_order_relaxed);
             m_cutoff_Hz_smoothed = m_cutoff_Hz_current.load(std::memory_order_relaxed);
-            state_1.fill(0.f);
-            state_2.fill(0.f);
+            m_state_1.fill(0.f);
+            m_state_2.fill(0.f);
+
+            calculate_smoothing_coefficient();
         }
 
         void calculate_smoothing_coefficient()

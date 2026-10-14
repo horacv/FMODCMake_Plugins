@@ -39,8 +39,8 @@ studio.plugins.registerPluginDescription("ANS Tone Generator", {
                 spacing: 10,
                 isFramed: false,
                 items: [
-                    { deckWidgetType: studio.ui.deckWidgetType.Dial, color: "#e3bb18", row: 0, column: 0, binding: "Freq.", },
-                    { deckWidgetType: studio.ui.deckWidgetType.Dial, color: "#ff3537", row: 0, column: 1, binding: "Gain", },
+                    { deckWidgetType: studio.ui.deckWidgetType.Dial, color: "#e3bb18", binding: "Freq.", },
+                    { deckWidgetType: studio.ui.deckWidgetType.Dial, color: "#ff3537", binding: "Gain", },
                 ],
             },
         ]

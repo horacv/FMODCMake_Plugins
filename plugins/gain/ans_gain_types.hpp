@@ -13,28 +13,28 @@ namespace ans_gain
         float m_smoothing_time_ms;
 
         unsigned int m_samplerate;
-        unsigned int buffer_size;
+        unsigned int m_buffer_size;
     };
 
     // The current state of the dsp effect
     struct ANS_DSP_State_Data {
         explicit ANS_DSP_State_Data(const ANS_DSP_Init_Data& init_data)
             : m_defaults(init_data)
-            , m_gain_lin_current(ans_dsp::db_to_linear(m_defaults.m_gain_db_default))
-            , m_gain_lin_target(m_gain_lin_current)
+            , m_gain_lin_smoothed(ans_dsp::db_to_linear(m_defaults.m_gain_db_default))
+            , m_gain_lin_target(m_gain_lin_smoothed)
             , m_samples_to_target(0)
         {}
 
         ANS_DSP_Init_Data m_defaults;
 
-        float m_gain_lin_current;
+        float m_gain_lin_smoothed;
         float m_gain_lin_target;
         unsigned int m_samples_to_target;
 
-        void reset(const int samplerate)
+        void reset(const unsigned int samplerate)
         {
             m_defaults.m_samplerate = samplerate;
-            m_gain_lin_current = m_gain_lin_target;
+            m_gain_lin_smoothed = m_gain_lin_target;
             m_samples_to_target = 0;
         }
     };

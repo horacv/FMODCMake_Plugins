@@ -1,6 +1,6 @@
 ### EQ 4B Plugin
 
-This directory contains the reference implementation of an FMOD DSP plugin that implements a 4-band equalizer.
+This directory contains an FMOD DSP plugin that implements a 4-band equalizer (low shelf / high-pass, two peaking bands, high shelf / low-pass).
 
 #### File Descriptions
 

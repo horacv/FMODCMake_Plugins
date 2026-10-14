@@ -19,12 +19,14 @@ namespace ans_tone_generator
     static constexpr auto PARAM_FREQ_LABEL = "Hz";
     static constexpr auto PARAM_FREQ_DESC = "Frequency in Hz. 20 to 20000. Default = 440";
     static constexpr float PARAM_FREQ_HZ_DEFAULT = 440.f;
-    static float param_frequency_mapping_values[] = { 20.f, 50.f, 100.f, 200.f, 500.f, 1000.f, 2000.f, 5000.f, 10000.f, 20000.f };
-    static float param_frequency_mapping_scale[]  = { 0.f, 1.32f, 2.32f, 3.32f, 4.64f, 5.64f, 6.64f, 7.97f, 8.97f, 9.97f };
+    static constexpr float PARAM_FREQ_HZ_MIN = 20.f;
+    static constexpr float PARAM_FREQ_HZ_MAX = 20000.f;
+    static float param_freq_mapping_values[] = { PARAM_FREQ_HZ_MIN, 50.f, 100.f, 200.f, 500.f, 1000.f, 2000.f, 5000.f, 10000.f, PARAM_FREQ_HZ_MAX };
+    static float param_freq_mapping_scale[]  = { 0.f, 1.32f, 2.32f, 3.32f, 4.64f, 5.64f, 6.64f, 7.97f, 8.97f, 9.97f };
 
     static constexpr auto PARAM_GAIN_NAME = "Gain";
     static constexpr auto PARAM_GAIN_LABEL = "dB";
-    static constexpr auto PARAM_GAIN_DESC = "Gain in dB. -80 to 10. Default = 0";
+    static constexpr auto PARAM_GAIN_DESC = "Gain in dB. -80 to 10. Default = -6";
     static constexpr float PARAM_GAIN_DB_DEFAULT = -6.f;
     static constexpr float PARAM_GAIN_DB_MAX = 10.f;
     static constexpr float PARAM_GAIN_DB_MIN = -80.f;
@@ -48,7 +50,7 @@ namespace ans_tone_generator
         .numoutputbuffers = FMOD_PLUGIN_BUFFERS_OUT_NUM,
         .create = dsp_create,
         .release = dsp_release,
-        .reset = nullptr,
+        .reset = nullptr, // A generator plugin doesn't trigger a reset.
         .read = nullptr,
         .process = dsp_process, // In a plugin with no input, this function 'generates' instead.
         .setposition = nullptr,
@@ -62,7 +64,7 @@ namespace ans_tone_generator
         .getparameterint = dsp_get_param_int,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr,
+        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = nullptr,
         .sys_deregister = nullptr,
@@ -73,7 +75,7 @@ namespace ans_tone_generator
         F_EXPORT FMOD_DSP_DESCRIPTION* F_CALL FMODGetDSPDescription()
         {
             init_param_desc_float_with_mapping(param_freq, PARAM_FREQ_NAME, PARAM_FREQ_LABEL,
-                PARAM_FREQ_DESC, PARAM_FREQ_HZ_DEFAULT, param_frequency_mapping_values, param_frequency_mapping_scale);
+                PARAM_FREQ_DESC, PARAM_FREQ_HZ_DEFAULT, param_freq_mapping_values, param_freq_mapping_scale);
             init_param_desc_float(param_gain, PARAM_GAIN_NAME, PARAM_GAIN_LABEL,
                 PARAM_GAIN_DESC, PARAM_GAIN_DB_MIN, PARAM_GAIN_DB_MAX, PARAM_GAIN_DB_DEFAULT);
             init_param_desc_int_enumerated(param_osc_type, PARAM_OSC_TYPE_NAME, PARAM_OSC_TYPE_LABEL,
@@ -89,23 +91,27 @@ namespace ans_tone_generator
     {
         ANS_DSP_Init_Data init_data = {};
         init_data.m_freq_Hz_default = PARAM_FREQ_HZ_DEFAULT;
-        init_data.m_gain_default = PARAM_GAIN_DB_DEFAULT;
+        init_data.m_freq_Hz_max = PARAM_FREQ_HZ_MAX;
+        init_data.m_freq_Hz_min = PARAM_FREQ_HZ_MIN;
+        init_data.m_gain_db_default = PARAM_GAIN_DB_DEFAULT;
+        init_data.m_gain_db_max = PARAM_GAIN_DB_MAX;
+        init_data.m_gain_db_min = PARAM_GAIN_DB_MIN;
         init_data.m_oscillator_type_default = PARAM_OSC_TYPE_DEFAULT;
 
         init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
         unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
         int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-        init_data.buffer_size = buffer_size_current;
-        init_data.samplerate = samplerate_current;
+        init_data.m_buffer_size = buffer_size_current;
+        init_data.m_samplerate = samplerate_current;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int length,

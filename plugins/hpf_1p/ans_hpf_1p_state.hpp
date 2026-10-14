@@ -14,7 +14,7 @@ namespace ans_hpf_1p
 
         void reset();
         void set_cutoff_Hz(float value);
-        [[nodiscard]] float get_cutoff_Hz() const { return m_data.m_cutoff_Hz_current; }
+        [[nodiscard]] float get_cutoff_Hz() const { return m_data.m_cutoff_Hz_current.load(std::memory_order::relaxed); }
         FMOD_RESULT process(const float* in_buffer, float* out_buffer,
             unsigned int buffer_size, int samplerate,  int in_channels, int out_channels);
 

@@ -7,16 +7,31 @@ subdirectory with its own `CMakeLists.txt`, built as a shared library
 `plugins/passthrough` is the reference implementation — copy its layout when
 adding a new plugin.
 
+| Directory | CMake target | FMOD Studio name |
+|---|---|---|
+| [`delay/`](delay/readme.md) | `ans_delay` | ANS Delay |
+| [`eq_4b/`](eq_4b/readme.md) | `ans_eq_4b` | ANS EQ 4B |
+| [`gain/`](gain/readme.md) | `ans_gain` | ANS Gain |
+| [`hpf_1p/`](hpf_1p/readme.md) | `ans_hpf_1p` | ANS HPF 1P |
+| [`hpf_2p/`](hpf_2p/readme.md) | `ans_hpf_2p` | ANS HPF 2P |
+| [`lpf_1p/`](lpf_1p/readme.md) | `ans_lpf_1p` | ANS LPF 1P |
+| [`lpf_2p/`](lpf_2p/readme.md) | `ans_lpf_2p` | ANS LPF 2P |
+| [`passthrough/`](passthrough/readme.md) | `ans_passthrough` | ANS Passthrough |
+| [`tone_generator/`](tone_generator/readme.md) | `ans_tone_generator` | ANS Tone Generator |
+
 #### Layout of a plugin directory
+
+The directory is named `<name>`; every file and the CMake target use the `ans_` prefix (`ans_<name>`).
 
 ```
 plugins/<name>/
-├── CMakeLists.txt            # SHARED library target
-├── <name>.cpp / .hpp         # FMODGetDSPDescription() entry point + DSP callback table
-├── <name>_state.cpp / .hpp   # Plugin's per-instance state and signal processing
-├── <name>.plugin.js          # FMOD Studio plugin description (UI, parameter bindings)
-├── <name>_types.hpp          # Data and types used by the DSP state
-└── resources/                # Assets referenced by the .plugin.js UI (icons, etc.)
+├── CMakeLists.txt                # SHARED library target `ans_<name>`
+├── ans_<name>.cpp / .hpp         # FMODGetDSPDescription() entry point + DSP callback table
+├── ans_<name>_state.cpp / .hpp   # Plugin's per-instance state and signal processing
+├── ans_<name>.plugin.js          # FMOD Studio plugin description (UI, parameter bindings)
+├── ans_<name>_types.hpp          # Data and types used by the DSP state
+├── readme.md                     # Plugin description + known issues
+└── resources/                    # Assets referenced by the .plugin.js UI (icons, etc.)
 ```
 
 #### Conventions
@@ -25,18 +40,17 @@ plugins/<name>/
   which initializes parameter descriptors and returns the static
   `FMOD_DSP_DESCRIPTION` describing the plugin's callback table.
 - **Per-instance state** is allocated via `FMOD_DSP_ALLOC`/`FMOD_DSP_FREE`
-  (see `alloc_dsp_state`/`get_dsp_state` in `libs/ans_fmod_dsp`), 
+  (see `alloc_create_dsp_state`/`free_destroy_dsp_state`/`get_dsp_state` in `libs/ans_fmod_dsp`),
   and attached to `FMOD_DSP_STATE::plugindata`.
 - **Shared helpers** for parameter descriptors and DSP state plumbing live in
   `libs/ans_fmod_dsp`; general-purpose and shared DSP math helpers live in
   `libs/ans_dsp`. New plugins should link both, plus `fmod_core`, as in
   `plugins/passthrough/CMakeLists.txt`.
 - **CMake target:** link `ans_dsp`, `ans_fmod_dsp`, and `fmod_core`, then copy
-  the plugin's `<name>.plugin.js` and `resources/` next to the built binary
+  the plugin's `ans_<name>.plugin.js` and `resources/` next to the built binary
   as a post-build step (see `plugins/passthrough/CMakeLists.txt` for the
   `add_custom_command(... POST_BUILD ...)` pattern).
 - **Register the new plugin** by adding `add_subdirectory(<name>)` to
   `plugins/CMakeLists.txt`.
 
-For Python scripts that download/install the FMOD API itself, see
-`tools/readme.md`.
+For Python scripts that download/install the FMOD API itself, see `tools/readme.md`.

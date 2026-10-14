@@ -21,10 +21,10 @@ namespace ans_delay
         [[nodiscard]] float get_dry_gain_db() const;
         void set_feedback_percent(float value);
         [[nodiscard]] float get_feedback_percent() const;
-        void set_active(const bool bActive) { m_data.playback_state = bActive ? ANS_DSP_ProcessingState::Active : ANS_DSP_ProcessingState::NotActive; }
+        void set_active(const bool is_active) { m_data.m_playback_state = is_active ? ANS_DSP_ProcessingState::ACTIVE : ANS_DSP_ProcessingState::NOT_ACTIVE; }
         void start_fading_out();
-        [[nodiscard]] bool is_fading_out() const { return m_data.playback_state == ANS_DSP_ProcessingState::FadingOut; }
-        [[nodiscard]] bool is_active() const { return m_data.playback_state != ANS_DSP_ProcessingState::NotActive; }
+        [[nodiscard]] bool is_fading_out() const { return m_data.m_playback_state == ANS_DSP_ProcessingState::FADING_OUT; }
+        [[nodiscard]] bool is_active() const { return m_data.m_playback_state != ANS_DSP_ProcessingState::NOT_ACTIVE; }
         FMOD_RESULT process(const float* in_buffer, float* out_buffer, unsigned int buffer_size, int in_channels, int out_channels);
 
     private:

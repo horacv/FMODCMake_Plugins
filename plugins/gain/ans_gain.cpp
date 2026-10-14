@@ -52,7 +52,7 @@ namespace ans_gain
         .getparameterint = nullptr,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // Disabled legacy 'read' callback in favor of 'process'
+        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = dsp_sys_register,
         .sys_deregister = dsp_sys_deregister,
@@ -82,17 +82,17 @@ namespace ans_gain
         init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
         unsigned int buffer_size; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size);
-        init_data.buffer_size = buffer_size;
+        init_data.m_buffer_size = buffer_size;
         int samplerate; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate);
         init_data.m_samplerate = samplerate;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)
@@ -129,7 +129,7 @@ namespace ans_gain
         if (in_buffer_array && out_buffer_array)
         {
             return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], buffer_size,
-                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels) ? FMOD_OK : FMOD_ERR_DSP_DONTPROCESS;
+                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;
@@ -142,9 +142,6 @@ namespace ans_gain
         {
             return FMOD_ERR_INVALID_HANDLE;
         }
-
-        int samplerate_current;
-        FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
 
         if (index == PARAM_GAIN)
         {

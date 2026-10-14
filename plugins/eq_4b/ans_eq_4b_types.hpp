@@ -75,8 +75,8 @@ namespace ans_eq_4b
         float m_h_gain_db_min;
 
         float m_smoothing_time_ms;
-        unsigned int buffer_size;
-        int samplerate;
+        unsigned int m_buffer_size;
+        int m_samplerate;
     };
 
     // The current state of the dsp effect
@@ -122,7 +122,7 @@ namespace ans_eq_4b
             m_h_freq_Hz_current = m_defaults.m_h_freq_Hz_default;
             m_h_freq_Hz_smoothed = m_defaults.m_h_freq_Hz_default;
 
-            const float buffer_duration_ms = ans_dsp::samples_to_ms(init_data.buffer_size, static_cast<float>(init_data.samplerate));
+            const float buffer_duration_ms = ans_dsp::samples_to_ms(init_data.m_buffer_size, static_cast<float>(init_data.m_samplerate));
             m_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(buffer_duration_ms, m_defaults.m_smoothing_time_ms);
         }
 

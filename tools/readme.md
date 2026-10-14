@@ -35,7 +35,9 @@ python get_fmod_api.py <username> <password> <platform> <api_version>
 ```
 
 #### `install_fmod_api.py`
-Extracts and copies FMOD API files from a local installer to the project's `libs/fmod` directory.
+Extracts the **Core** API files (`api/core/inc` and `api/core/lib`) from a local installer and copies them into the project's `libs/fmod/core` directory. The platform is detected from the installer file name.
 ```bash
 python install_fmod_api.py <installer_file> [--delete-installer]
 ```
+
+> The downloaded package is the "FMOD Studio API" installer, but only the **Core** API is installed. Neither CMake nor the plugins use the Studio API.

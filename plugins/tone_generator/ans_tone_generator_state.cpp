@@ -10,17 +10,17 @@ namespace ans_tone_generator
 {
     void ANS_DSP_State::set_freq_Hz(const float value)
     {
-        m_data.m_freq_Hz_current.store(value, std::memory_order_relaxed);
+        m_data.m_freq_Hz_current.store(std::clamp(value, m_data.m_defaults.m_freq_Hz_min, m_data.m_defaults.m_freq_Hz_max), std::memory_order_relaxed);
     }
 
     void ANS_DSP_State::set_gain_db(const float db)
     {
-        m_data.m_gain_lin_current.store(ans_dsp::db_to_linear(db), std::memory_order_relaxed);
+        m_data.m_gain_lin_current.store(ans_dsp::db_to_linear(std::clamp(db, m_data.m_defaults.m_gain_db_min, m_data.m_defaults.m_gain_db_max)), std::memory_order_relaxed);
     }
 
     void ANS_DSP_State::set_osc_type(const OSC_TYPE type)
     {
-        m_data.m_param_oscillator_type.store(type, std::memory_order_relaxed);
+        m_data.m_param_oscillator_type_current.store(type, std::memory_order_relaxed);
     }
 
     float ANS_DSP_State::get_freq_Hz() const
@@ -35,7 +35,7 @@ namespace ans_tone_generator
 
     OSC_TYPE ANS_DSP_State::get_osc_type() const
     {
-        return m_data.m_param_oscillator_type.load(std::memory_order_relaxed);
+        return m_data.m_param_oscillator_type_current.load(std::memory_order_relaxed);
     }
 
     FMOD_RESULT ANS_DSP_State::generate(float* out_buffer, const unsigned int buffer_size, const int out_channels)
@@ -47,11 +47,11 @@ namespace ans_tone_generator
 
         if (ans_dsp::interpolate_with_coefficient(m_data.m_freq_Hz_current.load(std::memory_order_relaxed), m_data.m_freq_smoothing_coefficient, m_data.m_freq_Hz_smoothed))
         {
-            m_data.m_phase_increment = ans_dsp::get_phase_increment(m_data.m_freq_Hz_smoothed, m_data.m_defaults.samplerate);
+            m_data.m_phase_increment = ans_dsp::get_phase_increment(m_data.m_freq_Hz_smoothed, m_data.m_defaults.m_samplerate);
         }
 
-        const int num_channels = std::clamp(out_channels, 0, FMOD_MAX_CHANNEL_WIDTH);
-        const OSC_TYPE osc = m_data.m_param_oscillator_type.load(std::memory_order_relaxed);
+        const unsigned int num_channels = std::clamp(out_channels, 0, FMOD_MAX_CHANNEL_WIDTH);
+        const OSC_TYPE osc = m_data.m_param_oscillator_type_current.load(std::memory_order_relaxed);
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int sample_index = 0; sample_index < buffer_size; ++sample_index)
@@ -73,7 +73,7 @@ namespace ans_tone_generator
                     case SQUARE:
                         return ans_dsp::generate_square_corrected(m_data.m_counter, m_data.m_phase_increment, m_data.m_gain_lin_smoothed);
                     case NOISE:
-                        return ans_dsp::uint32_bipolar(m_data.m_noise_state) * m_data.m_gain_lin_smoothed;
+                        return ans_dsp::generate_noise(m_data.m_noise_state, m_data.m_gain_lin_smoothed);
                     default:
                         break;
                 }
@@ -87,7 +87,7 @@ namespace ans_tone_generator
             }
 
             if (osc == NOISE)
-                m_data.m_noise_state = ans_dsp::generate_noise_xorshift32(m_data.m_noise_state);
+                m_data.m_noise_state = ans_dsp::get_xorshift32_next_state(m_data.m_noise_state);
             else
                 m_data.m_counter = ans_dsp::modulo_counter_advance_wrap(m_data.m_counter, m_data.m_phase_increment);
         }

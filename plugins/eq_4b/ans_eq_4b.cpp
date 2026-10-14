@@ -1,4 +1,4 @@
-#include  "ans_eq_4b.hpp"
+#include "ans_eq_4b.hpp"
 
 #include "ans_eq_4b_state.hpp"
 #include "ans_fmod_dsp.hpp"
@@ -18,7 +18,7 @@ namespace ans_eq_4b
     // LOW BAND
     static constexpr auto PARAM_L_FREQ_NAME = "Freq. L";
     static constexpr auto PARAM_L_FREQ_LABEL = "Hz";
-    static constexpr auto PARAM_L_FREQ_DESC = "Cutoff in Hz. 10Hz to 400Hz. Default = 10kHz";
+    static constexpr auto PARAM_L_FREQ_DESC = "Cutoff in Hz. 10Hz to 500Hz. Default = 10Hz";
     static constexpr float PARAM_L_FREQ_HZ_DEFAULT = 10.f;
     static constexpr float PARAM_L_FREQ_HZ_MAX = 500.f;
     static constexpr float PARAM_L_FREQ_HZ_MIN = 10.f;
@@ -38,7 +38,7 @@ namespace ans_eq_4b
 
     static constexpr auto PARAM_L_Q_NAME = "Q L";
     static constexpr auto PARAM_L_Q_LABEL = "";
-    static constexpr auto PARAM_L_Q_DESC = "Q. 0.1 to 10. Default = 0.7";
+    static constexpr auto PARAM_L_Q_DESC = "Q. 0.1 to 10. Default = 0.7071";
     static constexpr float PARAM_L_Q_DEFAULT = 0.7071f;
     static constexpr float PARAM_L_Q_MAX = 10.f;
     static constexpr float PARAM_L_Q_MIN = 0.1f;
@@ -90,7 +90,7 @@ namespace ans_eq_4b
     // HIGH BAND
     static constexpr auto PARAM_H_FREQ_NAME = "Freq. H";
     static constexpr auto PARAM_H_FREQ_LABEL = "Hz";
-    static constexpr auto PARAM_H_FREQ_DESC = "Cutoff in Hz. 10Hz to 400Hz. Default = 10kHz";
+    static constexpr auto PARAM_H_FREQ_DESC = "Cutoff in Hz. 2kHz to 22kHz. Default = 22kHz";
     static constexpr float PARAM_H_FREQ_HZ_DEFAULT = 22000.f;
     static constexpr float PARAM_H_FREQ_HZ_MAX = 22000.f;
     static constexpr float PARAM_H_FREQ_HZ_MIN = 2000.f;
@@ -250,16 +250,16 @@ namespace ans_eq_4b
 
         unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
         int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-        init_data.buffer_size = buffer_size_current;
-        init_data.samplerate = samplerate_current;
+        init_data.m_buffer_size = buffer_size_current;
+        init_data.m_samplerate = samplerate_current;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)
@@ -268,7 +268,7 @@ namespace ans_eq_4b
         {
             unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
             int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-            state->reset(buffer_size_current, samplerate_current);
+            state->reset(buffer_size_current, static_cast<unsigned int>(samplerate_current));
             return FMOD_OK;
         }
         return FMOD_ERR_INVALID_HANDLE;
@@ -296,9 +296,8 @@ namespace ans_eq_4b
 
         if (in_buffer_array && out_buffer_array)
         {
-            int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-            return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], buffer_size,
-                samplerate_current, *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
+            return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX],
+                buffer_size,*in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;
@@ -313,63 +312,49 @@ namespace ans_eq_4b
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        int samplerate; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate);
-
         switch (index) {
             case PARAM_L_FREQ:
                 state->set_freq_Hz(LOW, value);
                 return FMOD_OK;
-                break;
             case PARAM_L_GAIN:
                 state->set_gain_db(LOW, value);
                 return FMOD_OK;
-                break;
             case PARAM_L_Q:
                 state->set_Q(LOW, value);
                 return FMOD_OK;
-                break;
             case PARAM_LM_FREQ:
                 state->set_freq_Hz(LOW_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_LM_GAIN:
                 state->set_gain_db(LOW_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_LM_Q:
                 state->set_Q(LOW_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_HM_FREQ:
                 state->set_freq_Hz(HIGH_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_HM_GAIN:
                 state->set_gain_db(HIGH_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_HM_Q:
                 state->set_Q(HIGH_MID, value);
                 return FMOD_OK;
-                break;
             case PARAM_H_FREQ:
                 state->set_freq_Hz(HIGH, value);
                 return FMOD_OK;
-                break;
             case PARAM_H_GAIN:
                 state->set_gain_db(HIGH, value);
                 return FMOD_OK;
-                break;
             case PARAM_H_Q:
                 state->set_Q(HIGH, value);
                 return FMOD_OK;
-                break;
             default:
                 return FMOD_ERR_INVALID_PARAM;
         }
     }
 
-    FMOD_RESULT dsp_set_param_int(FMOD_DSP_STATE* dsp_state, int index, int value)
+    FMOD_RESULT F_CALL dsp_set_param_int(FMOD_DSP_STATE* dsp_state, int index, int value)
     {
         auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
@@ -397,63 +382,52 @@ namespace ans_eq_4b
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        switch (index) {
+        switch (index)
+        {
             case PARAM_L_FREQ:
                 *value = state->get_freq_Hz(LOW);
-                return FMOD_OK;
                 break;
             case PARAM_L_GAIN:
                 *value = state->get_gain_db(LOW);
-                return FMOD_OK;
                 break;
             case PARAM_L_Q:
                 *value = state->get_Q(LOW);
-                return FMOD_OK;
                 break;
             case PARAM_LM_FREQ:
                 *value = state->get_freq_Hz(LOW_MID);
-                return FMOD_OK;
                 break;
             case PARAM_LM_GAIN:
                 *value = state->get_gain_db(LOW_MID);
-                return FMOD_OK;
                 break;
             case PARAM_LM_Q:
                 *value = state->get_Q(LOW_MID);
-                return FMOD_OK;
                 break;
             case PARAM_HM_FREQ:
                 *value = state->get_freq_Hz(HIGH_MID);
-                return FMOD_OK;
                 break;
             case PARAM_HM_GAIN:
                 *value = state->get_gain_db(HIGH_MID);
-                return FMOD_OK;
                 break;
             case PARAM_HM_Q:
                 *value = state->get_Q(HIGH_MID);
-                return FMOD_OK;
                 break;
             case PARAM_H_FREQ:
                 *value = state->get_freq_Hz(HIGH);
-                return FMOD_OK;
                 break;
             case PARAM_H_GAIN:
                 *value = state->get_gain_db(HIGH);
-                return FMOD_OK;
                 break;
             case PARAM_H_Q:
                 *value = state->get_Q(HIGH);
-                return FMOD_OK;
                 break;
             default:
                 return FMOD_ERR_INVALID_PARAM;
         }
-        
-        return FMOD_ERR_INVALID_PARAM;
+
+        return write_float_value_string(value_str, *value);
     }
 
-    FMOD_RESULT dsp_get_param_int(FMOD_DSP_STATE* dsp_state, int index, int* value, char* value_str)
+    FMOD_RESULT F_CALL dsp_get_param_int(FMOD_DSP_STATE* dsp_state, int index, int* value, char* value_str)
     {
         const auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)

@@ -13,9 +13,9 @@ namespace ans_lpf_1p
 
     void ANS_DSP_State::set_cutoff_Hz(const float value)
     {
-        const float cutoff_min = m_data.m_defaults.m_cutoff_Hz_min;
-        const float cutoff_max = m_data.m_defaults.m_cutoff_Hz_max;
-        m_data.m_cutoff_Hz_current.store(std::clamp(value, cutoff_min, cutoff_max), std::memory_order::relaxed);
+        const float cutoff_Hz_min = m_data.m_defaults.m_cutoff_Hz_min;
+        const float cutoff_Hz_max = m_data.m_defaults.m_cutoff_Hz_max;
+        m_data.m_cutoff_Hz_current.store(std::clamp(value, cutoff_Hz_min, cutoff_Hz_max), std::memory_order::relaxed);
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer,
@@ -26,10 +26,10 @@ namespace ans_lpf_1p
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        const int num_channels = std::clamp(std::min(in_channels, out_channels), 0, FMOD_MAX_CHANNEL_WIDTH);
+        const unsigned int num_channels = std::clamp(std::min(in_channels, out_channels), 0, FMOD_MAX_CHANNEL_WIDTH);
         assert(num_channels == std::min(in_channels, out_channels) && "channel count exceeds FMOD_MAX_CHANNEL_WIDTH");
 
-        const float alpha = ans_dsp::alpha_from_Hz_bilinear(m_data.m_cutoff_Hz_current, static_cast<float>(samplerate));
+        const float alpha = ans_dsp::alpha_from_Hz_bilinear(m_data.m_cutoff_Hz_current.load(std::memory_order::relaxed), static_cast<float>(samplerate));
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int buffer_index = 0; buffer_index < buffer_size; ++buffer_index)
@@ -39,8 +39,8 @@ namespace ans_lpf_1p
                 const unsigned int sample = buffer_index * num_channels + channel_index;
 
                 const float input = in_buffer[sample];
-                const float out_lpf = ans_dsp::flush_subnormal_to_zero(m_data.lpf_prev[channel_index] + alpha * (input  - m_data.lpf_prev[channel_index]));
-                m_data.lpf_prev[channel_index] = out_lpf;
+                const float out_lpf = ans_dsp::flush_subnormal_to_zero(m_data.m_lpf_prev[channel_index] + alpha * (input - m_data.m_lpf_prev[channel_index]));
+                m_data.m_lpf_prev[channel_index] = out_lpf;
 
                 // y[n] = y[n-1] + α * (x[n] - y[n-1])
                 out_buffer[sample] = out_lpf;

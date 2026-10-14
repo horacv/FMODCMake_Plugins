@@ -1,6 +1,6 @@
 ### LPF 1P Plugin
 
-This directory contains the reference implementation of an FMOD DSP plugin that implements a 1-pole low-pass filter.
+This directory contains an FMOD DSP plugin that implements a 1-pole low-pass filter.
 
 #### File Descriptions
 

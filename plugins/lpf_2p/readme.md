@@ -1,9 +1,9 @@
 ### LPF 2P Plugin
- 
-This directory contains the reference implementation of an FMOD DSP plugin that implements a 2-pole low-pass filter.
- 
+
+This directory contains an FMOD DSP plugin that implements a 2-pole (biquad) low-pass filter.
+
 #### File Descriptions
- 
+
 - **`ans_lpf_2p.cpp` / `ans_lpf_2p.hpp`**: Defines the `FMOD_DSP_DESCRIPTION` and the necessary interface functions to register the plugin with FMOD.
 - **`ans_lpf_2p_state.cpp` / `ans_lpf_2p_state.hpp`**: Manages the plugin instance state and performs the signal processing.
 - **`ans_lpf_2p_types.hpp`**: Defines the plugin parameter types and structures.

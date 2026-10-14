@@ -9,8 +9,8 @@ namespace ans_fmod_dsp
     {
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_FLOAT;
-        std::memcpy(param.name,  name.data() , sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description = description;
         param.floatdesc.min = min;
         param.floatdesc.max = max;
@@ -24,8 +24,8 @@ namespace ans_fmod_dsp
     {
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_INT;
-        std::memcpy(param.name,  name.data() , sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description = description;
         param.intdesc.min = min;
         param.intdesc.max = max;
@@ -39,8 +39,8 @@ namespace ans_fmod_dsp
     {
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_BOOL;
-        std::memcpy(param.name,  name.data() , sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description = description;
         param.booldesc.defaultval = default_value;
         param.booldesc.valuenames = value_names;
@@ -51,8 +51,8 @@ namespace ans_fmod_dsp
     {
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_DATA;
-        std::memcpy(param.name,  name.data(), sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description = description;
         param.datadesc.datatype = data_type;
     }

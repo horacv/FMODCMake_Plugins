@@ -13,7 +13,7 @@ namespace ans_gain
         PARAM_COUNT
     };
 
-    static FMOD_DSP_PARAMETER_DESC param_gain;
+    inline FMOD_DSP_PARAMETER_DESC param_gain;
     inline FMOD_DSP_PARAMETER_DESC* param_description[PARAM_COUNT] {
         &param_gain,
     };

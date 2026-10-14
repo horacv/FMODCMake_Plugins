@@ -4,7 +4,8 @@ add_library(ans_tone_generator SHARED
         ans_tone_generator.cpp
         ans_tone_generator.hpp
         ans_tone_generator_state.cpp
-        ans_tone_generator_state.hpp)
+        ans_tone_generator_state.hpp
+        ans_tone_generator_types.hpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ans_dsp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ans_fmod_dsp)

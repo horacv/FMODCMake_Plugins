@@ -1,4 +1,4 @@
-#include  "ans_lpf_2p.hpp"
+#include "ans_lpf_2p.hpp"
 
 #include "ans_fmod_dsp.hpp"
 #include "ans_lpf_2p_state.hpp"
@@ -24,12 +24,12 @@ namespace ans_lpf_2p
 
     static constexpr auto PARAM_Q_NAME = "Q";
     static constexpr auto PARAM_Q_LABEL = "";
-    static constexpr auto PARAM_Q_DESC = "Q. 0.1 to 10. Default = 0.7";
+    static constexpr auto PARAM_Q_DESC = "Q. 0.1 to 10. Default = 0.7071";
     static constexpr float PARAM_Q_DEFAULT = 0.7071f;
     static constexpr float PARAM_Q_MAX = 10.f;
     static constexpr float PARAM_Q_MIN = 0.1f;
 
-    static constexpr float PARAM_SMOOTHING_TIME_MS = 5.8f;
+    static constexpr float SMOOTHING_TIME_MS = 5.8f;
 
     // PLUGIN DESCRIPTION
 
@@ -56,7 +56,7 @@ namespace ans_lpf_2p
         .getparameterint = nullptr,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // Disabled legacy 'read' callback in favor of 'process'
+        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = dsp_sys_register,
         .sys_deregister = dsp_sys_deregister,
@@ -89,7 +89,7 @@ namespace ans_lpf_2p
         init_data.m_cutoff_Hz_default = PARAM_CUTOFF_HZ_DEFAULT;
         init_data.m_cutoff_Hz_max = PARAM_CUTOFF_HZ_MAX;
         init_data.m_cutoff_Hz_min = PARAM_CUTOFF_HZ_MIN;
-        init_data.m_smoothing_time_ms = PARAM_SMOOTHING_TIME_MS;
+        init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
         unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
         int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
@@ -97,12 +97,12 @@ namespace ans_lpf_2p
         init_data.samplerate = samplerate_current;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)

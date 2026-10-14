@@ -9,7 +9,7 @@ namespace ans_dsp
 
     /**
      * Computes the one-pole filter coefficient (α) for a target cutoff frequency,
-     * using the exact bilinear-transform formula (accurate all the way up to Nyquist).
+     * using the bilinear-transform formula (accurate all the way up to Nyquist).
      *
      * @param cutoff_Hz The cutoff frequency in Hz for the filter. The frequency should lie within a valid range as determined
      *                 by the sampling rate and internal clamping mechanism.

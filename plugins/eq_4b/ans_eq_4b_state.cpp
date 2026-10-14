@@ -58,8 +58,8 @@ namespace ans_eq_4b
                 break;
             case LOW_MID:
                 {
-                    const float gain_db_min = m_data.m_defaults.m_l_gain_db_min;
-                    const float gain_db_max = m_data.m_defaults.m_l_gain_db_max;
+                    const float gain_db_min = m_data.m_defaults.m_lm_gain_db_min;
+                    const float gain_db_max = m_data.m_defaults.m_lm_gain_db_max;
                     m_data.m_lm_gain_lin_current.store(ans_dsp::db_to_linear(std::clamp(db, gain_db_min, gain_db_max)));
                 }
                 break;
@@ -69,7 +69,7 @@ namespace ans_eq_4b
                     const float gain_db_max = m_data.m_defaults.m_hm_gain_db_max;
                     m_data.m_hm_gain_lin_current.store(ans_dsp::db_to_linear(std::clamp(db, gain_db_min, gain_db_max)));
                 }
-            break;
+                break;
             case HIGH:
                 {
                     const float gain_db_min = m_data.m_defaults.m_h_gain_db_min;
@@ -153,7 +153,7 @@ namespace ans_eq_4b
                 return ans_dsp::linear_to_db(m_data.m_h_gain_lin_current.load());
                 break;
             default:
-                return MAX;
+                return 0.0f;
                 break;
         }
     }
@@ -181,7 +181,7 @@ namespace ans_eq_4b
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer,
-        const unsigned int buffer_size, const int samplerate, const int in_channels, const int out_channels)
+        const unsigned int buffer_size, const int in_channels, const int out_channels)
     {
         if (!(in_buffer && out_buffer && out_channels))
         {
@@ -200,27 +200,27 @@ namespace ans_eq_4b
         ans_dsp::interpolate_with_coefficient(m_data.m_l_freq_Hz_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_l_freq_Hz_smoothed);
         ans_dsp::interpolate_with_coefficient(m_data.m_l_Q_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_l_Q_smoothed);
         const auto [l_a0, l_a1, l_a2, l_b0, l_b1, l_b2] = get_filter_type(LOW) == LOW_OR_HIGH_PASS
-            ? ans_dsp::hpf_filter_coefficients(m_data.m_l_freq_Hz_smoothed, static_cast<float>(samplerate), m_data.m_l_Q_smoothed).normalized()
-            : ans_dsp::low_shelf_coefficients(m_data.m_l_freq_Hz_smoothed, static_cast<float>(samplerate), get_gain_db(LOW), m_data.m_l_Q_smoothed).normalized();
+            ? ans_dsp::high_pass_coefficients(m_data.m_l_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), m_data.m_l_Q_smoothed).normalized()
+            : ans_dsp::low_shelf_coefficients(m_data.m_l_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), get_gain_db(LOW), m_data.m_l_Q_smoothed).normalized();
 
         // LOW MID BAND
         ans_dsp::interpolate_with_coefficient(m_data.m_lm_freq_Hz_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_lm_freq_Hz_smoothed);
         ans_dsp::interpolate_with_coefficient(m_data.m_lm_Q_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_lm_Q_smoothed);
         const auto [lm_a0, lm_a1, lm_a2, lm_b0, lm_b1, lm_b2] =
-            ans_dsp::peaking_eq_coefficients(m_data.m_lm_freq_Hz_smoothed, static_cast<float>(samplerate), get_gain_db(LOW_MID), m_data.m_lm_Q_smoothed).normalized();
+            ans_dsp::peaking_eq_coefficients(m_data.m_lm_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), get_gain_db(LOW_MID), m_data.m_lm_Q_smoothed).normalized();
 
         // HIGH MID BAND
         ans_dsp::interpolate_with_coefficient(m_data.m_hm_freq_Hz_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_hm_freq_Hz_smoothed);
         ans_dsp::interpolate_with_coefficient(m_data.m_hm_Q_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_hm_Q_smoothed);
         const auto [hm_a0, hm_a1, hm_a2, hm_b0, hm_b1, hm_b2] =
-            ans_dsp::peaking_eq_coefficients(m_data.m_hm_freq_Hz_smoothed, static_cast<float>(samplerate), get_gain_db(HIGH_MID), m_data.m_hm_Q_smoothed).normalized();
+            ans_dsp::peaking_eq_coefficients(m_data.m_hm_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), get_gain_db(HIGH_MID), m_data.m_hm_Q_smoothed).normalized();
 
         // HIGH BAND
         ans_dsp::interpolate_with_coefficient(m_data.m_h_freq_Hz_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_h_freq_Hz_smoothed);
         ans_dsp::interpolate_with_coefficient(m_data.m_h_Q_current.load(std::memory_order_relaxed), m_data.m_smoothing_coefficient, m_data.m_h_Q_smoothed);
         const auto [h_a0, h_a1, h_a2, h_b0, h_b1, h_b2] = get_filter_type(HIGH) == LOW_OR_HIGH_PASS
-            ? ans_dsp::lpf_filter_coefficients(m_data.m_h_freq_Hz_smoothed, static_cast<float>(samplerate), m_data.m_h_Q_smoothed).normalized()
-            : ans_dsp::high_shelf_coefficients(m_data.m_h_freq_Hz_smoothed, static_cast<float>(samplerate), get_gain_db(HIGH), m_data.m_h_Q_smoothed).normalized();
+            ? ans_dsp::low_pass_coefficients(m_data.m_h_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), m_data.m_h_Q_smoothed).normalized()
+            : ans_dsp::high_shelf_coefficients(m_data.m_h_freq_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), get_gain_db(HIGH), m_data.m_h_Q_smoothed).normalized();
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int buffer_index = 0; buffer_index < buffer_size; ++buffer_index)

@@ -22,7 +22,7 @@ namespace ans_gain
 
     float ANS_DSP_State::get_gain_db() const
     {
-        return ans_dsp::linear_to_db(m_data.m_gain_lin_current);
+        return ans_dsp::linear_to_db(m_data.m_gain_lin_target);
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer, const unsigned int buffer_size, const int in_channels, const int out_channels)
@@ -32,15 +32,15 @@ namespace ans_gain
 
         if (!(in_buffer && out_buffer && out_channels))
         {
-            return FMOD_ERR_INVALID_HANDLE;
+            return FMOD_ERR_DSP_DONTPROCESS;
         }
 
         // Buffers are interleaved [L,R,L,R,L,R...], so to get all possible samples to process, multiply the buffer size by the minimum of the input and output channels.
 
         unsigned int samples_to_process = buffer_size * std::min(in_channels, out_channels);
-        float smoothed_gain = m_data.m_gain_lin_current;
+        float smoothed_gain = m_data.m_gain_lin_smoothed;
 
-        // delta = distance to target gain remaining / samples remaining, recomputed every remaining sample.
+        // delta = distance to target gain remaining / samples remaining, recomputed once every block.
         // Only snap to target once the ramp has actually completed. This can span multiple process calls.
 
         if (m_data.m_samples_to_target)
@@ -66,7 +66,7 @@ namespace ans_gain
             *out_buffer++ = *in_buffer++ * smoothed_gain;
         }
 
-        m_data.m_gain_lin_current = smoothed_gain;
+        m_data.m_gain_lin_smoothed = smoothed_gain;
         return FMOD_OK;
     }
 }

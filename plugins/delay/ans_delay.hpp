@@ -20,7 +20,6 @@ namespace ans_delay
     static FMOD_DSP_PARAMETER_DESC param_wet_gain;
     static FMOD_DSP_PARAMETER_DESC param_dry_gain;
     static FMOD_DSP_PARAMETER_DESC param_feedback;
-    static FMOD_DSP_PARAMETER_DESC param_lpf_cutoff;
     inline FMOD_DSP_PARAMETER_DESC* param_description[PARAM_COUNT] {
         &param_delay,
         &param_wet_gain,

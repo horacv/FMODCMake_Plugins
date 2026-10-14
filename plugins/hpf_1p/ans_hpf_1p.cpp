@@ -48,7 +48,7 @@ namespace ans_hpf_1p
         .getparameterint = nullptr,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // Disabled legacy 'read' callback in favor of 'process'
+        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = dsp_sys_register,
         .sys_deregister = dsp_sys_deregister,
@@ -77,12 +77,12 @@ namespace ans_hpf_1p
         init_data.m_cutoff_Hz_min = PARAM_CUTOFF_HZ_MIN;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)
@@ -109,7 +109,7 @@ namespace ans_hpf_1p
             if (in_buffer_array && out_buffer_array)
             {
                 out_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX] = in_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX];
-                out_buffer_array[0].speakermode = in_buffer_array[0].speakermode;
+                out_buffer_array->speakermode = in_buffer_array->speakermode;
             }
 
             return inputs_idle ? FMOD_ERR_DSP_DONTPROCESS : FMOD_OK;

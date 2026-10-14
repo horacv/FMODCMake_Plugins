@@ -43,13 +43,13 @@ namespace ans_passthrough
     static constexpr auto PARAM_BOOL_LABEL = "";
     static constexpr auto PARAM_BOOL_DESC = "Bool parameter";
     static constexpr bool PARAM_BOOL_DEFAULT = false;
-    static const char* bool_param_values[2] = { "Active", "Inactive" };
+    static const char* bool_param_values[2] = { "Inactive", "Active" };
 
     // Custom data param
-    static constexpr auto PARAM_CUSTOM_NAME = "User Data";
+    static constexpr auto PARAM_CUSTOM_NAME = "Custom Data";
     static constexpr auto PARAM_CUSTOM_LABEL = "Custom Data";
     static constexpr auto PARAM_CUSTOM_DESC = "Custom data parameter";
-    static constexpr int PARAM_CUSTOM_INT_DEFAULT = 0;
+    static constexpr unsigned int PARAM_CUSTOM_INT_DEFAULT = 0;
 
     static bool ans_passthrough_registered = false;
 
@@ -62,7 +62,7 @@ namespace ans_passthrough
         const float value,
         const unsigned int id,
         const bool enabled)
-        : name(""), id(id), value(value),enabled(enabled)
+        : name(""), id(id), value(value), enabled(enabled)
     {
         std::snprintf(this->name, sizeof(this->name), "%s", name);
     }
@@ -99,6 +99,8 @@ namespace ans_passthrough
         .sys_mix = dsp_sys_mix,
     };
 
+    // DSP INTERFACE
+
     extern "C" {
         F_EXPORT FMOD_DSP_DESCRIPTION* F_CALL FMODGetDSPDescription()
         {
@@ -120,18 +122,18 @@ namespace ans_passthrough
     {
         ANS_DSP_Init_Data init_data = {};
         init_data.m_param_bool_default = PARAM_BOOL_DEFAULT;
-        init_data.m_param_data_default.value = PARAM_CUSTOM_INT_DEFAULT;
+        init_data.m_param_data_default.m_length = PARAM_CUSTOM_INT_DEFAULT;
         init_data.m_param_float_default = PARAM_FLOAT_DEFAULT;
         init_data.m_param_int_default = PARAM_INT_DEFAULT;
         init_data.m_param_int_enum_default = PARAM_ENUM_DEFAULT;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)
@@ -145,22 +147,22 @@ namespace ans_passthrough
     }
 
     FMOD_RESULT F_CALL dsp_read(FMOD_DSP_STATE* dsp_state,
-        float* in_buffer, float* out_buffer, unsigned int length, int in_channels, int* out_channels)
+        float* in_buffer, float* out_buffer, unsigned int buffer_size, int in_channels, int* out_channels)
     {
         if (auto* state = get_dsp_state<ANS_DSP_State>(dsp_state))
         {
-            return state->process(in_buffer, out_buffer, length, in_channels, *out_channels) ? FMOD_OK : FMOD_ERR_DSP_DONTPROCESS;
+            return state->process(in_buffer, out_buffer, buffer_size, in_channels, *out_channels);
         }
-        return FMOD_ERR_INVALID_HANDLE;
+        return FMOD_ERR_DSP_DONTPROCESS;
     }
 
-    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int length,
+    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int buffer_size,
         const FMOD_DSP_BUFFER_ARRAY* in_buffer_array, FMOD_DSP_BUFFER_ARRAY* out_buffer_array, FMOD_BOOL inputs_idle, FMOD_DSP_PROCESS_OPERATION operation)
     {
         auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
         {
-            return FMOD_ERR_INVALID_HANDLE;
+            return FMOD_ERR_DSP_DONTPROCESS;
         }
 
         if (operation == FMOD_DSP_PROCESS_QUERY)
@@ -176,8 +178,8 @@ namespace ans_passthrough
 
         if (in_buffer_array && out_buffer_array)
         {
-            return state->process(in_buffer_array->buffers[0], out_buffer_array->buffers[0], length,
-                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels) ? FMOD_OK : FMOD_ERR_DSP_DONTPROCESS;
+            return state->process(in_buffer_array->buffers[0], out_buffer_array->buffers[0], buffer_size,
+                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;
@@ -259,11 +261,9 @@ namespace ans_passthrough
 
         if (index == PARAM_DATA)
         {
-            if (sizeof(ANS_DSP_CustomData) != length)
-            {
-                return FMOD_ERR_FILE_BAD;
-            }
-            state->set_param_data(*static_cast<ANS_DSP_CustomData*>(data));
+            const auto new_data = static_cast<ANS_DSP_CustomData*>(data);
+            new_data->m_length = length;
+            state->set_param_data(*new_data);
             return FMOD_OK;
         }
 
@@ -289,8 +289,6 @@ namespace ans_passthrough
 
     FMOD_RESULT F_CALL dsp_get_param_int(FMOD_DSP_STATE* dsp_state, int index, int* value, char* value_str)
     {
-        using namespace ans_fmod_dsp;
-
         const auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
         {
@@ -313,8 +311,6 @@ namespace ans_passthrough
 
     FMOD_RESULT F_CALL dsp_get_param_bool(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL* value, char* value_str)
     {
-        using namespace ans_fmod_dsp;
-
         const auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
         {
@@ -332,8 +328,6 @@ namespace ans_passthrough
 
     FMOD_RESULT F_CALL dsp_get_param_data(FMOD_DSP_STATE* dsp_state, int index, void** value, unsigned int* length, char* value_str)
     {
-        using namespace ans_fmod_dsp;
-
         const auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
         {
@@ -344,7 +338,7 @@ namespace ans_passthrough
         {
             *value =  const_cast<ANS_DSP_CustomData*>(state->get_param_data());
             *length = sizeof(ANS_DSP_CustomData);
-            return write_int_value_string(value_str, state->get_param_data()->value);
+            return write_int_value_string(value_str, state->get_param_data()->m_length);
         }
 
         return FMOD_ERR_INVALID_PARAM;

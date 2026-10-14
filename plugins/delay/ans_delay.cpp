@@ -17,21 +17,21 @@ namespace ans_delay
 
     static constexpr auto PARAM_DELAY_NAME = "Delay";
     static constexpr auto PARAM_DELAY_LABEL = "ms";
-    static constexpr auto PARAM_DELAY_DESC = "Delay in ms. 1 to 5 sec. Default = 500ms";
+    static constexpr auto PARAM_DELAY_DESC = "Delay in ms. 1ms to 5s. Default = 500ms";
     static constexpr float PARAM_DELAY_DEFAULT = 500.0f;
     static constexpr float PARAM_DELAY_MAX = 5000.0f;
     static constexpr float PARAM_DELAY_MIN = 1.0f;
 
     static constexpr auto PARAM_WET_GAIN_NAME = "Gain Wet";
     static constexpr auto PARAM_WET_GAIN_LABEL = "dB";
-    static constexpr auto PARAM_WET_GAIN_DESC = "Gain in dB";
+    static constexpr auto PARAM_WET_GAIN_DESC = "Gain in dB. -80 to 10. Default = 0";
     static constexpr float PARAM_WET_GAIN_DB_DEFAULT = 0.f;
     static constexpr float PARAM_WET_GAIN_DB_MAX = 10.f;
     static constexpr float PARAM_WET_GAIN_DB_MIN = -80.f;
 
     static constexpr auto PARAM_DRY_GAIN_NAME = "Gain Dry";
     static constexpr auto PARAM_DRY_GAIN_LABEL = "dB";
-    static constexpr auto PARAM_DRY_GAIN_DESC = "Gain in dB";
+    static constexpr auto PARAM_DRY_GAIN_DESC = "Gain in dB. -80 to 10. Default = 0";
     static constexpr float PARAM_DRY_GAIN_DB_DEFAULT = 0.f;
     static constexpr float PARAM_DRY_GAIN_DB_MAX = 10.f;
     static constexpr float PARAM_DRY_GAIN_DB_MIN = -80.f;
@@ -71,7 +71,7 @@ namespace ans_delay
         .getparameterint = nullptr,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // Disabled legacy 'read' callback in favor of 'process'
+        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = dsp_sys_register,
         .sys_deregister = dsp_sys_deregister,
@@ -122,16 +122,16 @@ namespace ans_delay
 
         unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
         int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-        init_data.buffer_size = buffer_size_current;
-        init_data.samplerate = samplerate_current;
+        init_data.m_buffer_size = buffer_size_current;
+        init_data.m_samplerate = samplerate_current;
 
         ANS_DSP_State* state = nullptr;
-        return alloc_create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
+        return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
 
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state)
     {
-        return free_destroy_dsp_state<ANS_DSP_State>(dsp_state);
+        return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state)

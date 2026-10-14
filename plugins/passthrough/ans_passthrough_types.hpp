@@ -13,7 +13,7 @@ namespace ans_passthrough
     };
 
     struct ANS_DSP_CustomData {
-        int value;
+        unsigned int m_length = 0;
     };
 
     // Defaults and initialization values
@@ -52,7 +52,7 @@ namespace ans_passthrough
             m_param_int_current = m_defaults.m_param_int_default;
             m_param_int_enum_current = m_defaults.m_param_int_enum_default;
             m_param_bool_current = m_defaults.m_param_bool_default;
-            m_param_data_current.value = m_defaults.m_param_data_default.value;
+            m_param_data_current.m_length = m_defaults.m_param_data_default.m_length;
         }
     };
 }

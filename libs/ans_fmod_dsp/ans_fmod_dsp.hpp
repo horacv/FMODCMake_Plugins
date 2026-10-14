@@ -2,10 +2,12 @@
 #define ANS_FMOD_DSP_HPP
 
 #include "fmod.hpp"
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <memory>
 #include <string_view>
+#include <utility>
 
 namespace ans_fmod_dsp
 {
@@ -20,10 +22,10 @@ namespace ans_fmod_dsp
      * @param dsp_state A pointer to the FMOD_DSP_STATE structure associated with the DSP.
      * @param out_state Receives the constructed state pointer on success, or nullptr on failure.
      * @param args Arguments forwarded to T's constructor.
-     * @return FMOD_OK on success, FMOD_ERR_UNINITIALIZED if allocation failed.
+     * @return FMOD_OK on success, FMOD_ERR_MEMORY if allocation failed.
      */
     template <typename T, typename... Args>
-    [[nodiscard]] FMOD_RESULT alloc_create_dsp_state(FMOD_DSP_STATE* dsp_state, T*& out_state, Args&&... args)
+    [[nodiscard]] FMOD_RESULT create_dsp_state(FMOD_DSP_STATE* dsp_state, T*& out_state, Args&&... args)
     {
         assert(dsp_state != nullptr);
         assert(dsp_state->plugindata == nullptr);
@@ -33,7 +35,7 @@ namespace ans_fmod_dsp
         {
             out_state = nullptr;
             dsp_state->plugindata = nullptr;
-            return FMOD_ERR_UNINITIALIZED;
+            return FMOD_ERR_MEMORY;
         }
 
         out_state = std::construct_at(static_cast<T*>(memory), std::forward<Args>(args)...);
@@ -45,17 +47,17 @@ namespace ans_fmod_dsp
      * Destroys and frees the DSP state structure of type T stored in dsp_state->plugindata.
      *
      * @param dsp_state A pointer to the FMOD_DSP_STATE structure associated with the DSP.
-     * @return FMOD_OK on success, FMOD_ERR_UNINITIALIZED if plugindata was already null.
+     * @return FMOD_OK on success, FMOD_ERR_MEMORY if plugindata was already null.
      */
     template <typename T>
-    FMOD_RESULT free_destroy_dsp_state(FMOD_DSP_STATE* dsp_state)
+    FMOD_RESULT destroy_dsp_state(FMOD_DSP_STATE* dsp_state)
     {
         assert(dsp_state != nullptr);
 
         T* state = static_cast<T*>(dsp_state->plugindata);
         if (!state)
         {
-            return FMOD_ERR_INVALID_HANDLE;
+            return FMOD_ERR_MEMORY;
         }
 
         dsp_state->plugindata = nullptr;
@@ -78,6 +80,28 @@ namespace ans_fmod_dsp
     }
 
     /**
+     * Copies a string view into a fixed-size character array, ensuring null termination.
+     * Strings longer than string_size - 1 are truncated; debug builds assert!!!.
+     *
+     * @tparam string_size The size of the destination character array.
+     * @param destination A reference to a fixed-size character array where the string will be copied.
+     * @param source The source string view to copy into the destination array.
+     */
+    template <std::size_t string_size>
+    void copy_fixed_string(char (&destination)[string_size], const std::string_view& source)
+    {
+        static_assert(string_size > 0);
+        assert(source.size() < string_size && "Source string truncated");
+
+        const std::size_t copy_size = std::min(string_size - 1, source.size());
+        if (copy_size > 0)
+        {
+            std::memcpy(destination, source.data(), copy_size);
+        }
+        destination[copy_size] = '\0'; // Make sure the string is null-terminated.
+    }
+
+    /**
      * Initializes an integer parameter descriptor for an FMOD DSP plugin with enumerated values.
      *
      * @param param A reference to the FMOD_DSP_PARAMETER_DESC structure to initialize.
@@ -95,8 +119,8 @@ namespace ans_fmod_dsp
 
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_INT;
-        std::memcpy(param.name,  name.data(), sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description  = description;
         param.intdesc.min = 0;
         param.intdesc.max = static_cast<int>(EnumCount - 1);
@@ -126,8 +150,8 @@ namespace ans_fmod_dsp
 
         param = {};
         param.type = FMOD_DSP_PARAMETER_TYPE_FLOAT;
-        std::memcpy(param.name,  name.data(), sizeof(param.name) - 1);
-        std::memcpy(param.label, label.data(), sizeof(param.label) - 1);
+        copy_fixed_string(param.name, name);
+        copy_fixed_string(param.label, label.data());
         param.description  = description;
         param.floatdesc.min = values[0];
         param.floatdesc.max = values[ValueCount - 1];
@@ -166,7 +190,7 @@ namespace ans_fmod_dsp
      * @param value_names An array of null-terminated strings representing the names for each enumerated value, or nullptr if not applicable.
      */
     void init_param_desc_int(FMOD_DSP_PARAMETER_DESC& param, std::string_view name, std::string_view label,
-        const char* description, int min, int max, int default_value, bool goes_to_inf,const char* const* value_names);
+        const char* description, int min, int max, int default_value, bool goes_to_inf, const char* const* value_names);
 
     /**
      * Initializes a boolean parameter descriptor for an FMOD DSP plugin.
@@ -200,6 +224,7 @@ namespace ans_fmod_dsp
      *               The buffer must have a capacity of at least FMOD_DSP_GETPARAM_VALUESTR_LENGTH characters.
      * @param value The boolean value to convert. If true, "True" is written to the buffer;
      *              if false, "False" is written.
+     * @return FMOD_OK on success.
      */
     FMOD_RESULT write_bool_value_string(char* buffer, bool value);
 
@@ -209,6 +234,7 @@ namespace ans_fmod_dsp
      * @param buffer A pointer to the character buffer where the string representation of the value will be written.
      *               The buffer must be large enough to hold the resulting string, including the null terminator.
      * @param value The floating-point value to convert to a string.
+     * @return FMOD_OK on success.
      */
     FMOD_RESULT write_float_value_string(char* buffer, float value);
 
@@ -218,6 +244,7 @@ namespace ans_fmod_dsp
      * @param buffer A pointer to a character array where the string representation of the integer will be written.
      *               The buffer should have a size of at least FMOD_DSP_GETPARAM_VALUESTR_LENGTH.
      * @param value The integer value to convert to a string.
+     * @return FMOD_OK on success.
      */
     FMOD_RESULT write_int_value_string(char* buffer, int value);
 }

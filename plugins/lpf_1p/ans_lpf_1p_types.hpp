@@ -24,12 +24,12 @@ namespace ans_lpf_1p
         ANS_DSP_Init_Data m_defaults;
 
         // y[n-1]: previous low passed sample per channel
-        std::array<float, FMOD_MAX_CHANNEL_WIDTH> lpf_prev {};
+        std::array<float, FMOD_MAX_CHANNEL_WIDTH> m_lpf_prev {};
         std::atomic<float> m_cutoff_Hz_current;
 
         void reset()
         {
-            lpf_prev.fill(0);
+            m_lpf_prev.fill(0);
         }
     };
 }

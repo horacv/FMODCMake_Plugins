@@ -6,7 +6,8 @@
 
 namespace ans_passthrough
 {
-    class ANS_DSP_State {
+    class ANS_DSP_State
+    {
     public:
         explicit ANS_DSP_State(const ANS_DSP_Init_Data &init_data) : m_data(init_data) {}
         ~ANS_DSP_State() = default;
@@ -17,7 +18,7 @@ namespace ans_passthrough
         void set_param_int(const int value) { m_data.m_param_int_current = value; }
         void set_param_int_enum(const int value) { m_data.m_param_int_enum_current = value; }
         void set_param_bool(const bool value) { m_data.m_param_bool_current = value; }
-        void set_param_data(const ANS_DSP_CustomData& value) { m_data.m_param_data_current = value; }
+        void set_param_data(const ANS_DSP_CustomData value) { m_data.m_param_data_current = value; }
 
         [[nodiscard]] float get_param_float() const { return m_data.m_param_float_current; }
         [[nodiscard]] int get_param_int() const { return m_data.m_param_int_current; }

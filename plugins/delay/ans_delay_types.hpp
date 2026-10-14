@@ -11,9 +11,9 @@ namespace ans_delay
 {
     enum class ANS_DSP_ProcessingState
     {
-        Active,    // Receiving real input, processing normally
-        FadingOut, // Input stopped, playing decaying tail
-        NotActive  // Tail fully decayed, nothing left to output
+        ACTIVE,    // Receiving real input, processing normally
+        FADING_OUT, // Input stopped, playing decaying tail
+        NOT_ACTIVE  // Tail fully decayed, nothing left to output
     };
 
     // Defaults and initialization values
@@ -37,8 +37,8 @@ namespace ans_delay
         float m_min_threshold_db;
         float m_smoothing_time_ms;
 
-        int samplerate;
-        unsigned int buffer_size;
+        int m_samplerate;
+        unsigned int m_buffer_size;
     };
 
     // The current state of the dsp effect
@@ -51,10 +51,10 @@ namespace ans_delay
             , m_wet_gain_lin_smoothed(m_wet_gain_lin_target)
             , m_dry_gain_lin_target(ans_dsp::db_to_linear(m_defaults.m_dry_gain_db_default))
             , m_dry_gain_lin_smoothed(m_dry_gain_lin_target)
-            , m_feedback_normalized_target(m_defaults.m_feedback_percent_default)
+            , m_feedback_normalized_target(m_defaults.m_feedback_percent_default * 0.01f)
             , m_feedback_normalized_smoothed(m_feedback_normalized_target)
             , m_channel_count_current(2)
-            , m_delay_smoothed_samples(ans_dsp::ms_to_samples(m_delay_ms_smoothed, static_cast<float>(m_defaults.samplerate)) * m_channel_count_current)
+            , m_delay_smoothed_samples(ans_dsp::ms_to_samples(m_delay_ms_smoothed, static_cast<float>(m_defaults.m_samplerate)) * m_channel_count_current)
             , m_delay_buffer_write_index(m_delay_smoothed_samples)
             , m_delay_buffer_read_index(0)
             , m_smoothing_coefficient(0)
@@ -79,15 +79,15 @@ namespace ans_delay
         unsigned int m_delay_buffer_write_index;
         unsigned int m_delay_buffer_read_index;
 
-        ANS_DSP_ProcessingState playback_state = ANS_DSP_ProcessingState::NotActive;
+        ANS_DSP_ProcessingState m_playback_state = ANS_DSP_ProcessingState::NOT_ACTIVE;
         float m_smoothing_coefficient;
 
         std::vector<float> m_delay_buffer;
 
         void reset(const unsigned int buffer_size, const int samplerate)
         {
-            m_defaults.samplerate = samplerate;
-            m_defaults.buffer_size = buffer_size;
+            m_defaults.m_samplerate = samplerate;
+            m_defaults.m_buffer_size = buffer_size;
 
             m_delay_ms_smoothed = m_delay_ms_target.load();
             m_wet_gain_lin_smoothed = m_wet_gain_lin_target.load();
@@ -96,10 +96,10 @@ namespace ans_delay
 
             update_delay_smoothed_samples();
             m_delay_buffer_write_index = m_delay_smoothed_samples;
-            playback_state = ANS_DSP_ProcessingState::NotActive;
+            m_playback_state = ANS_DSP_ProcessingState::NOT_ACTIVE;
 
             m_delay_buffer.clear();
-            const unsigned int max_delay_samples = ans_dsp::ms_to_samples(m_defaults.m_delay_ms_max, static_cast<float>(m_defaults.samplerate));
+            const unsigned int max_delay_samples = ans_dsp::ms_to_samples(m_defaults.m_delay_ms_max, static_cast<float>(m_defaults.m_samplerate));
             // Allocate n number of samples based on the maximum supported delay and the maximum supported FMOD channel count.
             // Only allocate memory in reset(). NEVER do this in process()!
             m_delay_buffer.resize(max_delay_samples * FMOD_MAX_CHANNEL_WIDTH, 0.0f);
@@ -110,7 +110,7 @@ namespace ans_delay
 
         void calculate_smoothing_coefficient()
         {
-            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.buffer_size, static_cast<float>(m_defaults.samplerate));
+            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.m_buffer_size, static_cast<float>(m_defaults.m_samplerate));
             m_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(buffer_duration_ms, m_defaults.m_smoothing_time_ms);
         }
 
@@ -145,7 +145,7 @@ namespace ans_delay
 
         void update_delay_smoothed_samples()
         {
-            m_delay_smoothed_samples = ans_dsp::ms_to_samples(m_delay_ms_smoothed, static_cast<float>(m_defaults.samplerate)) * m_channel_count_current;
+            m_delay_smoothed_samples = ans_dsp::ms_to_samples(m_delay_ms_smoothed, static_cast<float>(m_defaults.m_samplerate)) * m_channel_count_current;
         }
     };
 }
