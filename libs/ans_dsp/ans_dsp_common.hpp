@@ -19,7 +19,7 @@ namespace ans_dsp
      */
     [[nodiscard]] inline float db_to_linear(const float db)
     {
-        return std::powf(10, db * 0.05f);
+        return std::pow(10.f, db * 0.05f);
     }
 
     /**
@@ -33,7 +33,7 @@ namespace ans_dsp
      */
     [[nodiscard]] inline float db_to_linear_sqrt(const float db)
     {
-        return std::powf(10, db * 0.025f);
+        return std::pow(10.f, db * 0.025f);
     }
 
     /**
@@ -45,7 +45,7 @@ namespace ans_dsp
      */
     [[nodiscard]] inline float linear_to_db(const float value)
     {
-        return std::log10f(value) * 20;
+        return std::log10(value) * 20;
     }
 
     /**
