@@ -6,6 +6,8 @@ A CMake template project for developing custom FMOD DSP plugins in C++.
 
 ![screenshot.png](images/screenshot.png)
 
+### Verified FMOD Programmers API Version: 2.03.15
+
 ## Overview
 
 This project provides a structure for creating cross-platform FMOD DSP plugins in C++.\

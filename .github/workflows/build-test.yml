@@ -15,13 +15,13 @@ jobs:
         os_config:
           - os: windows-latest
             platform: windows
-            fmod_api_version: "20314"
+            fmod_api_version: "20315"
           - os: ubuntu-latest
             platform: linux
-            fmod_api_version: "20314"
+            fmod_api_version: "20315"
           - os: macos-latest
             platform: mac
-            fmod_api_version: "20314"
+            fmod_api_version: "20315"
 
     runs-on: ${{ matrix.os_config.os }}
 

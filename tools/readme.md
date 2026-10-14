@@ -20,12 +20,12 @@ python setup_fmod_api.py <username> <password> <platform> <api_version> [--delet
 ```
 - **username/password**: Your FMOD account credentials.
 - **platform**: `windows`, `linux`, or `mac`.
-- **api_version**: e.g., `20312` (representing version 2.03.12).
+- **api_version**: e.g., `20315` (representing version 2.03.15).
 - **--delete-installer**: (Optional) Deletes the downloaded installer after successful extraction.
 
 **Example:**
 ```bash
-python setup_fmod_api.py user@example.com password123 windows 20312 --delete-installer
+python setup_fmod_api.py user@example.com password123 windows 20315 --delete-installer
 ```
 
 #### `get_fmod_api.py`

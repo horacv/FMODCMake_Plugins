@@ -6,7 +6,7 @@ studio.plugins.registerPluginDescription("ANS Passthrough", {
         "Float Param": { displayName: "Float" },
         "Int Param": { displayName: "Int" },
         "Int Enum Param": { displayName: "Option" },
-        "User Data": { displayName: "Data" },
+        "Custom Data": { displayName: "Data" },
     },
     deckUi: {
         deckWidgetType: studio.ui.deckWidgetType.Layout,
@@ -31,7 +31,7 @@ studio.plugins.registerPluginDescription("ANS Passthrough", {
                         spacing: 8,
                         contentsMargins: { left: 2, top: 0, right: 2, bottom: 0 },
                         items: [
-                            { deckWidgetType: studio.ui.deckWidgetType.DataDrop, binding: "User Data", fileNameFilters: "*.wav" },
+                            { deckWidgetType: studio.ui.deckWidgetType.DataDrop, binding: "Custom Data", fileNameFilters: "*.wav" },
                         ],
                     },
                 ],
