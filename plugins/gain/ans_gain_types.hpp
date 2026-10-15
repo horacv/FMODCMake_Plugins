@@ -12,7 +12,7 @@ namespace ans_gain
         float m_gain_db_min;
         float m_smoothing_time_ms;
 
-        unsigned int m_samplerate;
+        int m_samplerate;
         unsigned int m_buffer_size;
     };
 
@@ -31,7 +31,7 @@ namespace ans_gain
         float m_gain_lin_target;
         unsigned int m_samples_to_target;
 
-        void reset(const unsigned int samplerate)
+        void reset(const int samplerate)
         {
             m_defaults.m_samplerate = samplerate;
             m_gain_lin_smoothed = m_gain_lin_target;

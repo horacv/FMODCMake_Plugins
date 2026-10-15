@@ -12,6 +12,8 @@ namespace ans_hpf_1p
         float m_cutoff_Hz_default;
         float m_cutoff_Hz_max;
         float m_cutoff_Hz_min;
+
+        int m_samplerate;
     };
 
     // The current state of the dsp effect
@@ -27,8 +29,9 @@ namespace ans_hpf_1p
         std::array<float, FMOD_MAX_CHANNEL_WIDTH> m_lpf_prev {};
         std::atomic<float> m_cutoff_Hz_current;
 
-        void reset()
+        void reset(const int samplerate)
         {
+            m_defaults.m_samplerate = samplerate;
             m_lpf_prev.fill(0);
         }
     };

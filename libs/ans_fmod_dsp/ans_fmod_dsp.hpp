@@ -156,10 +156,10 @@ namespace ans_fmod_dsp
         param.floatdesc.min = values[0];
         param.floatdesc.max = values[ValueCount - 1];
         param.floatdesc.defaultval = default_value;
-        param.floatdesc.mapping.type = FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE_PIECEWISE_LINEAR;
-        param.floatdesc.mapping.piecewiselinearmapping.numpoints = static_cast<int>(ValueCount);
-        param.floatdesc.mapping.piecewiselinearmapping.pointparamvalues = values;
-        param.floatdesc.mapping.piecewiselinearmapping.pointpositions = positions;
+        param.floatdesc.mapping_type = FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE_PIECEWISE_LINEAR;
+        param.floatdesc.mapping_piecewiselinear_numpoints = static_cast<int>(ValueCount);
+        param.floatdesc.mapping_piecewiselinear_pointparamvalues = values;
+        param.floatdesc.mapping_piecewiselinear_pointpositions = positions;
     }
 
     /**

@@ -9,13 +9,6 @@
 
 namespace ans_delay
 {
-    enum class ANS_DSP_ProcessingState
-    {
-        ACTIVE,    // Receiving real input, processing normally
-        FADING_OUT, // Input stopped, playing decaying tail
-        NOT_ACTIVE  // Tail fully decayed, nothing left to output
-    };
-
     // Defaults and initialization values
     struct ANS_DSP_Init_Data {
         float m_delay_ms_default;
@@ -79,7 +72,6 @@ namespace ans_delay
         unsigned int m_delay_buffer_write_index;
         unsigned int m_delay_buffer_read_index;
 
-        ANS_DSP_ProcessingState m_playback_state = ANS_DSP_ProcessingState::NOT_ACTIVE;
         float m_smoothing_coefficient;
 
         std::vector<float> m_delay_buffer;
@@ -96,7 +88,6 @@ namespace ans_delay
 
             update_delay_smoothed_samples();
             m_delay_buffer_write_index = m_delay_smoothed_samples;
-            m_playback_state = ANS_DSP_ProcessingState::NOT_ACTIVE;
 
             m_delay_buffer.clear();
             const unsigned int max_delay_samples = ans_dsp::ms_to_samples(m_defaults.m_delay_ms_max, static_cast<float>(m_defaults.m_samplerate));

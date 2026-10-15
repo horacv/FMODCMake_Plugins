@@ -165,8 +165,8 @@ def copy_api_files(temp_dir, platform):
 def main():
     if len(sys.argv) < 2 or len(sys.argv) > 3:
         print("Usage: python install_fmod_api.py <installer_file> [--delete-installer]")
-        print("Example: python install_fmod_api.py fmodstudioapi20315win-installer.exe")
-        print("Example: python install_fmod_api.py fmodstudioapi20315win-installer.exe --delete-installer")
+        print("Example: python install_fmod_api.py fmodstudioapi20400win-installer.exe")
+        print("Example: python install_fmod_api.py fmodstudioapi20400win-installer.exe --delete-installer")
         print("\nOptions:")
         print("  --delete-installer    Delete the installer file after successful installation")
         sys.exit(1)

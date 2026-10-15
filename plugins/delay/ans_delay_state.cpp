@@ -16,7 +16,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_delay_ms() const
     {
-        return m_data.m_delay_ms_smoothed;
+        return m_data.m_delay_ms_target.load(std::memory_order_relaxed);
     }
 
     void ANS_DSP_State::set_wet_gain_db(const float db)
@@ -28,7 +28,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_wet_gain_db() const
     {
-        return ans_dsp::linear_to_db(m_data.m_wet_gain_lin_smoothed);
+        return ans_dsp::linear_to_db(m_data.m_wet_gain_lin_target.load(std::memory_order_relaxed));
     }
 
     void ANS_DSP_State::set_dry_gain_db(const float db)
@@ -40,7 +40,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_dry_gain_db() const
     {
-        return ans_dsp::linear_to_db(m_data.m_dry_gain_lin_smoothed);
+        return ans_dsp::linear_to_db(m_data.m_dry_gain_lin_target.load(std::memory_order_relaxed));
     }
 
     void ANS_DSP_State::set_feedback_percent(const float value)
@@ -52,12 +52,24 @@ namespace ans_delay
 
     float ANS_DSP_State::get_feedback_percent() const
     {
-        return m_data.m_feedback_normalized_smoothed * 100.0f;
+        return m_data.m_feedback_normalized_target.load(std::memory_order_relaxed) * 100.0f;
     }
 
-    void ANS_DSP_State::start_fading_out()
+    unsigned int ANS_DSP_State::get_tail_length_samples() const
     {
-        m_data.m_playback_state = ANS_DSP_ProcessingState::FADING_OUT;
+        const unsigned int delay_samples = ans_dsp::ms_to_samples(get_delay_ms(), static_cast<float>(m_data.m_defaults.m_samplerate));
+
+        if (get_feedback_percent() <= 0.f)
+        {
+            return delay_samples;
+        }
+        if (get_feedback_percent() >= 100.f)
+        {
+            return FMOD_DSP_COOLDOWN_INFINITE;
+        }
+
+        const auto num_repeats = std::ceil(std::log(ans_dsp::db_to_linear(m_data.m_defaults.m_min_threshold_db)) / std::log( m_data.m_feedback_normalized_target.load(std::memory_order_relaxed)));
+        return (static_cast<unsigned int>(num_repeats) + 1) * delay_samples;
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer, const unsigned int buffer_size, const int in_channels, const int out_channels)
@@ -93,8 +105,6 @@ namespace ans_delay
         }
 
         unsigned int samples_to_process = buffer_size * num_channels;
-        float loudest_delay_sample_in_buffer = 0.f;
-
         while (samples_to_process--)
         {
             /*
@@ -126,15 +136,6 @@ namespace ans_delay
             m_data.m_delay_buffer[m_data.m_delay_buffer_write_index] = input + m_data.m_feedback_normalized_smoothed * delay;
             // Advance the delay buffer indexes - Move the "tape" one position.
             m_data.advance_delay_buffer_indexes();
-
-            // Cache the loudest sample in the delay buffer to know when to stop processing when fading out.
-            loudest_delay_sample_in_buffer = std::max(std::fabs(delay), std::fabs(loudest_delay_sample_in_buffer));
-        }
-
-        if (is_fading_out())
-        {
-            const bool is_below_threshold = loudest_delay_sample_in_buffer < ans_dsp::db_to_linear(m_data.m_defaults.m_min_threshold_db);
-            m_data.m_playback_state = is_below_threshold ? ANS_DSP_ProcessingState::NOT_ACTIVE : ANS_DSP_ProcessingState::FADING_OUT;
         }
 
         return FMOD_OK;

@@ -53,7 +53,7 @@ def main():
     if len(sys.argv) != 5:
         print("Usage: python get_fmod_api.py <username> <password> <platform> <api_version>")
         print("Platforms: mac, linux, windows")
-        print("Example: python get_fmod_api.py user@example.com password123 windows 20315")
+        print("Example: python get_fmod_api.py user@example.com password123 windows 20400")
         sys.exit(1)
 
     user = sys.argv[1]

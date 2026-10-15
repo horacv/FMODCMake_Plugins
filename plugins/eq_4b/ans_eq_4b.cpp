@@ -5,9 +5,10 @@
 
 #define FMOD_PLUGIN_NAME "ANS EQ 4B"
 #define FMOD_PLUGIN_VERSION 0x00000100
-#define FMOD_PLUGIN_BUFFERS_IN_NUM 1
-#define FMOD_PLUGIN_BUFFERS_OUT_NUM 1
-#define FMOD_MAIN_BUFFER_INDEX 0
+#define FMOD_PLUGIN_MODE FMOD_DSP_MODE_FILTER
+#define FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES 0
+#define FMOD_PLUGIN_IN_CHANNELS 0 // 0 = Any
+#define FMOD_PLUGIN_OUT_CHANNELS 0 // 0 = Any
 
 using namespace ans_fmod_dsp;
 
@@ -124,12 +125,13 @@ namespace ans_eq_4b
         .pluginsdkversion = FMOD_PLUGIN_SDK_VERSION,
         .name = FMOD_PLUGIN_NAME,
         .version = FMOD_PLUGIN_VERSION,
-        .numinputbuffers = FMOD_PLUGIN_BUFFERS_IN_NUM,
-        .numoutputbuffers = FMOD_PLUGIN_BUFFERS_OUT_NUM,
+        .mode = FMOD_PLUGIN_MODE,
+        .defaultcooldown = FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES,
+        .inchannels = FMOD_PLUGIN_IN_CHANNELS,
+        .outchannels = FMOD_PLUGIN_OUT_CHANNELS,
         .create = dsp_create,
         .release = dsp_release,
         .reset = dsp_reset,
-        .read = nullptr, // Disabled legacy 'read' callback in favor of 'process'
         .process = dsp_process,
         .setposition = nullptr,
         .numparameters = PARAM_COUNT,
@@ -142,7 +144,6 @@ namespace ans_eq_4b
         .getparameterint = dsp_get_param_int,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // Disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = dsp_sys_register,
         .sys_deregister = dsp_sys_deregister,
@@ -274,8 +275,7 @@ namespace ans_eq_4b
         return FMOD_ERR_INVALID_HANDLE;
     }
 
-    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int buffer_size,
-        const FMOD_DSP_BUFFER_ARRAY* in_buffer_array, FMOD_DSP_BUFFER_ARRAY* out_buffer_array, FMOD_BOOL inputs_idle, FMOD_DSP_PROCESS_OPERATION operation)
+    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE *dsp_state, unsigned int buffer_size, const FMOD_DSP_BUFFER *in_buffer, const FMOD_DSP_BUFFER *out_buffer)
     {
         auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
@@ -283,21 +283,9 @@ namespace ans_eq_4b
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        if (operation == FMOD_DSP_PROCESS_QUERY)
+        if (in_buffer && out_buffer)
         {
-            if (in_buffer_array && out_buffer_array)
-            {
-                out_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX] = in_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX];
-                out_buffer_array->speakermode = in_buffer_array->speakermode;
-            }
-
-            return inputs_idle ? FMOD_ERR_DSP_DONTPROCESS : FMOD_OK;
-        }
-
-        if (in_buffer_array && out_buffer_array)
-        {
-            return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX],
-                buffer_size,*in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
+            return state->process(in_buffer->buffer, out_buffer->buffer, buffer_size,in_buffer->numchannels, out_buffer->numchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;
@@ -467,6 +455,7 @@ namespace ans_eq_4b
 
 #undef FMOD_PLUGIN_NAME
 #undef FMOD_PLUGIN_VERSION
-#undef FMOD_PLUGIN_BUFFERS_IN_NUM
-#undef FMOD_PLUGIN_BUFFERS_OUT_NUM
-#undef FMOD_MAIN_BUFFER_INDEX
+#undef FMOD_PLUGIN_MODE
+#undef FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES
+#undef FMOD_PLUGIN_IN_CHANNELS
+#undef FMOD_PLUGIN_OUT_CHANNELS

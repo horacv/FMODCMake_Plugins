@@ -5,9 +5,10 @@
 
 #define FMOD_PLUGIN_NAME "ANS Tone Generator"
 #define FMOD_PLUGIN_VERSION 0x00000100
-#define FMOD_PLUGIN_BUFFERS_IN_NUM 0
-#define FMOD_PLUGIN_BUFFERS_OUT_NUM 1
-#define FMOD_MAIN_BUFFER_INDEX 0
+#define FMOD_PLUGIN_MODE FMOD_DSP_MODE_GENERATOR
+#define FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES 0
+#define FMOD_PLUGIN_IN_CHANNELS 0
+#define FMOD_PLUGIN_OUT_CHANNELS 1
 
 using namespace ans_fmod_dsp;
 
@@ -46,13 +47,14 @@ namespace ans_tone_generator
         .pluginsdkversion = FMOD_PLUGIN_SDK_VERSION,
         .name = FMOD_PLUGIN_NAME,
         .version = FMOD_PLUGIN_VERSION,
-        .numinputbuffers = FMOD_PLUGIN_BUFFERS_IN_NUM,
-        .numoutputbuffers = FMOD_PLUGIN_BUFFERS_OUT_NUM,
+        .mode = FMOD_PLUGIN_MODE,
+        .defaultcooldown = FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES,
+        .inchannels = FMOD_PLUGIN_IN_CHANNELS,
+        .outchannels = FMOD_PLUGIN_OUT_CHANNELS,
         .create = dsp_create,
         .release = dsp_release,
         .reset = nullptr, // A generator plugin doesn't trigger a reset.
-        .read = nullptr,
-        .process = dsp_process, // In a plugin with no input, this function 'generates' instead.
+        .process = dsp_process, // In a plugin of type FMOD_DSP_MODE_GENERATOR, this function 'generates' instead.
         .setposition = nullptr,
         .numparameters = PARAM_COUNT,
         .paramdesc = param_description,
@@ -64,7 +66,6 @@ namespace ans_tone_generator
         .getparameterint = dsp_get_param_int,
         .getparameterbool = nullptr,
         .getparameterdata = nullptr,
-        .shouldiprocess = nullptr, // shouldiprocess works with the disabled legacy 'read' callback in favor of 'process'
         .userdata = nullptr,
         .sys_register = nullptr,
         .sys_deregister = nullptr,
@@ -114,8 +115,7 @@ namespace ans_tone_generator
         return destroy_dsp_state<ANS_DSP_State>(dsp_state);
     }
 
-    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int length,
-        const FMOD_DSP_BUFFER_ARRAY*, FMOD_DSP_BUFFER_ARRAY* out_buffer_array, FMOD_BOOL, FMOD_DSP_PROCESS_OPERATION operation)
+    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE *dsp_state, unsigned int buffer_size, const FMOD_DSP_BUFFER *in_buffer, const FMOD_DSP_BUFFER *out_buffer)
     {
         auto* state = get_dsp_state<ANS_DSP_State>(dsp_state);
         if (!state)
@@ -123,21 +123,9 @@ namespace ans_tone_generator
             return FMOD_ERR_INVALID_HANDLE;
         }
 
-        if (operation == FMOD_DSP_PROCESS_QUERY)
+        if (in_buffer && out_buffer)
         {
-            if (out_buffer_array)
-            {
-                out_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX] = 1;
-                out_buffer_array->speakermode = FMOD_SPEAKERMODE_MONO;
-            }
-
-            return FMOD_OK;
-        }
-
-        if (out_buffer_array)
-        {
-            return state->generate(out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], length,
-                out_buffer_array->buffernumchannels[FMOD_MAIN_BUFFER_INDEX]);
+            return state->generate(out_buffer->buffer, buffer_size, out_buffer->numchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;
@@ -224,6 +212,7 @@ namespace ans_tone_generator
 
 #undef FMOD_PLUGIN_NAME
 #undef FMOD_PLUGIN_VERSION
-#undef FMOD_PLUGIN_BUFFERS_IN_NUM
-#undef FMOD_PLUGIN_BUFFERS_OUT_NUM
-#undef FMOD_MAIN_BUFFER_INDEX
+#undef FMOD_PLUGIN_MODE
+#undef FMOD_PLUGIN_DEFAULT_COOLDOWN_SAMPLES
+#undef FMOD_PLUGIN_IN_CHANNELS
+#undef FMOD_PLUGIN_OUT_CHANNELS

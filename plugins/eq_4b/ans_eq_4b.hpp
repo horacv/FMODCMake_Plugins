@@ -85,7 +85,7 @@ namespace ans_eq_4b
     FMOD_RESULT F_CALL dsp_create(FMOD_DSP_STATE* dsp_state);
     FMOD_RESULT F_CALL dsp_release(FMOD_DSP_STATE* dsp_state);
     FMOD_RESULT F_CALL dsp_reset(FMOD_DSP_STATE* dsp_state);
-    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE* dsp_state, unsigned int buffer_size, const FMOD_DSP_BUFFER_ARRAY* in_buffer_array, FMOD_DSP_BUFFER_ARRAY* out_buffer_array, FMOD_BOOL inputs_idle, FMOD_DSP_PROCESS_OPERATION operation);
+    FMOD_RESULT F_CALL dsp_process(FMOD_DSP_STATE *dsp_state, unsigned int buffer_size, const FMOD_DSP_BUFFER *in_buffer, const FMOD_DSP_BUFFER *out_buffer);
     FMOD_RESULT F_CALL dsp_set_param_float(FMOD_DSP_STATE* dsp_state, int index, float value);
     FMOD_RESULT F_CALL dsp_set_param_int(FMOD_DSP_STATE* dsp_state, int index, int value);
     FMOD_RESULT F_CALL dsp_get_param_float(FMOD_DSP_STATE* dsp_state, int index, float* value, char* value_str);

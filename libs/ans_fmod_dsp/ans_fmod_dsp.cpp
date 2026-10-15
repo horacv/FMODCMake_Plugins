@@ -15,7 +15,7 @@ namespace ans_fmod_dsp
         param.floatdesc.min = min;
         param.floatdesc.max = max;
         param.floatdesc.defaultval = default_value;
-        param.floatdesc.mapping.type = FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE_AUTO;
+        param.floatdesc.mapping_type = FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE_AUTO;
     }
 
     void init_param_desc_int(FMOD_DSP_PARAMETER_DESC& param, const std::string_view name, const std::string_view label,
