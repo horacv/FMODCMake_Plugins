@@ -81,10 +81,8 @@ namespace ans_gain
         init_data.m_gain_db_min = PARAM_GAIN_DB_MIN;
         init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
-        unsigned int buffer_size; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size);
-        init_data.m_buffer_size = buffer_size;
-        int samplerate; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate);
-        init_data.m_samplerate = samplerate;
+        FMOD_DSP_GETBLOCKSIZE(dsp_state, &init_data.m_buffer_size);
+        FMOD_DSP_GETSAMPLERATE(dsp_state, &init_data.m_samplerate);
 
         ANS_DSP_State* state = nullptr;
         return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);

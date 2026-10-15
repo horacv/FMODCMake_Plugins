@@ -12,11 +12,10 @@ namespace ans_lpf_1p
         explicit ANS_DSP_State(const ANS_DSP_Init_Data& init_data) : m_data(init_data) {}
         ~ANS_DSP_State() = default;
 
-        void reset();
+        void reset(int samplerate);
         void set_cutoff_Hz(float value);
-        [[nodiscard]] float get_cutoff_Hz() const { return m_data.m_cutoff_Hz_current; }
-        FMOD_RESULT process(const float* in_buffer, float* out_buffer,
-            unsigned int buffer_size, int samplerate,  int in_channels, int out_channels);
+        [[nodiscard]] float get_cutoff_Hz() const { return m_data.m_cutoff_Hz_current.load(std::memory_order::relaxed); }
+        FMOD_RESULT process(const float* in_buffer, float* out_buffer, unsigned int buffer_size, int in_channels, int out_channels);
 
     private:
         ANS_DSP_State_Data m_data;

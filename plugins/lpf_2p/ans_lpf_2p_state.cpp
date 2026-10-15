@@ -24,7 +24,7 @@ namespace ans_lpf_2p
     }
 
     FMOD_RESULT ANS_DSP_State::process(const float* in_buffer, float* out_buffer,
-        const unsigned int buffer_size, const int samplerate, const int in_channels, const int out_channels)
+        const unsigned int buffer_size, const int in_channels, const int out_channels)
     {
         if (!(in_buffer && out_buffer && out_channels))
         {
@@ -45,7 +45,7 @@ namespace ans_lpf_2p
         // TDF-II formula: https://ccrma.stanford.edu/~jos/fp/Transposed_Direct_Forms.html
 
         const auto [a0, a1, a2, b0, b1, b2] =
-            ans_dsp::low_pass_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(samplerate), m_data.m_Q_smoothed).normalized();
+            ans_dsp::low_pass_coefficients(m_data.m_cutoff_Hz_smoothed, static_cast<float>(m_data.m_defaults.m_samplerate), m_data.m_Q_smoothed).normalized();
 
         // Buffers are interleaved [L,R,L,R,L,R...]
         for (unsigned int buffer_index = 0; buffer_index < buffer_size; ++buffer_index)

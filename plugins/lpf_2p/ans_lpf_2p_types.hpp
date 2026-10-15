@@ -19,8 +19,8 @@ namespace ans_lpf_2p
         float m_cutoff_Hz_min;
         float m_smoothing_time_ms;
 
-        unsigned int buffer_size;
-        unsigned int samplerate;
+        unsigned int m_buffer_size;
+        int m_samplerate;
     };
 
     // The current state of the dsp effect
@@ -53,8 +53,8 @@ namespace ans_lpf_2p
 
         void reset(const unsigned int buffer_size, const unsigned int samplerate)
         {
-            m_defaults.buffer_size = buffer_size;
-            m_defaults.samplerate = samplerate;
+            m_defaults.m_buffer_size = buffer_size;
+            m_defaults.m_samplerate = samplerate;
 
             m_Q_smoothed = m_Q_current.load(std::memory_order_relaxed);
             m_cutoff_Hz_smoothed = m_cutoff_Hz_current.load(std::memory_order_relaxed);
@@ -66,7 +66,7 @@ namespace ans_lpf_2p
 
         void calculate_smoothing_coefficient()
         {
-            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.buffer_size, static_cast<float>(m_defaults.samplerate));
+            const float buffer_duration_ms = ans_dsp::samples_to_ms(m_defaults.m_buffer_size, static_cast<float>(m_defaults.m_samplerate));
             m_smoothing_coefficient = ans_dsp::smoothing_coefficient_from_ms(buffer_duration_ms, m_defaults.m_smoothing_time_ms);
         }
     };

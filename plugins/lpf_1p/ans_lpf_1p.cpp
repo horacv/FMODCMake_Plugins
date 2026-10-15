@@ -76,6 +76,8 @@ namespace ans_lpf_1p
         init_data.m_cutoff_Hz_max = PARAM_CUTOFF_HZ_MAX;
         init_data.m_cutoff_Hz_min = PARAM_CUTOFF_HZ_MIN;
 
+        FMOD_DSP_GETSAMPLERATE(dsp_state, &init_data.m_samplerate);
+
         ANS_DSP_State* state = nullptr;
         return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
     }
@@ -89,7 +91,8 @@ namespace ans_lpf_1p
     {
         if (auto* state = get_dsp_state<ANS_DSP_State>(dsp_state))
         {
-            state->reset();
+            int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
+            state->reset(samplerate_current);
             return FMOD_OK;
         }
         return FMOD_ERR_INVALID_HANDLE;
@@ -117,9 +120,8 @@ namespace ans_lpf_1p
 
         if (in_buffer_array && out_buffer_array)
         {
-            int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
             return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], buffer_size,
-                samplerate_current, *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
+                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;

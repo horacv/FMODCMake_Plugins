@@ -20,7 +20,7 @@ namespace ans_hpf_2p
         float m_smoothing_time_ms;
 
         unsigned int m_buffer_size;
-        unsigned int m_samplerate;
+        int m_samplerate;
     };
 
     // The current state of the dsp effect

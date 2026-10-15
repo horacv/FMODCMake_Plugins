@@ -91,10 +91,8 @@ namespace ans_hpf_2p
         init_data.m_cutoff_Hz_min = PARAM_CUTOFF_HZ_MIN;
         init_data.m_smoothing_time_ms = SMOOTHING_TIME_MS;
 
-        unsigned int buffer_size_current; FMOD_DSP_GETBLOCKSIZE(dsp_state, &buffer_size_current);
-        int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
-        init_data.m_buffer_size = buffer_size_current;
-        init_data.m_samplerate = samplerate_current;
+        FMOD_DSP_GETBLOCKSIZE(dsp_state, &init_data.m_buffer_size);
+        FMOD_DSP_GETSAMPLERATE(dsp_state, &init_data.m_samplerate);
 
         ANS_DSP_State* state = nullptr;
         return create_dsp_state<ANS_DSP_State>(dsp_state, state, init_data);
@@ -139,9 +137,8 @@ namespace ans_hpf_2p
 
         if (in_buffer_array && out_buffer_array)
         {
-            int samplerate_current; FMOD_DSP_GETSAMPLERATE(dsp_state, &samplerate_current);
             return state->process(in_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], out_buffer_array->buffers[FMOD_MAIN_BUFFER_INDEX], buffer_size,
-                                  samplerate_current, *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
+                *in_buffer_array->buffernumchannels, *out_buffer_array->buffernumchannels);
         }
 
         return FMOD_ERR_DSP_DONTPROCESS;

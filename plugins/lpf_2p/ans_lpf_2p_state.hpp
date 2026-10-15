@@ -17,8 +17,7 @@ namespace ans_lpf_2p
         void set_Q(float value);
         [[nodiscard]] float get_cutoff_Hz() const { return m_data.m_cutoff_Hz_current.load(); }
         [[nodiscard]] float get_Q() const { return m_data.m_Q_current.load(); }
-        FMOD_RESULT process(const float* in_buffer, float* out_buffer,
-            unsigned int buffer_size, int samplerate,  int in_channels, int out_channels);
+        FMOD_RESULT process(const float* in_buffer, float* out_buffer, unsigned int buffer_size, int in_channels, int out_channels);
 
     private:
         ANS_DSP_State_Data m_data;
