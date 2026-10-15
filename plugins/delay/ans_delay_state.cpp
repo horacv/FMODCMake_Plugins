@@ -16,7 +16,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_delay_ms() const
     {
-        return m_data.m_delay_ms_smoothed;
+        return m_data.m_delay_ms_target.load(std::memory_order_relaxed);
     }
 
     void ANS_DSP_State::set_wet_gain_db(const float db)
@@ -28,7 +28,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_wet_gain_db() const
     {
-        return ans_dsp::linear_to_db(m_data.m_wet_gain_lin_smoothed);
+        return ans_dsp::linear_to_db(m_data.m_wet_gain_lin_target.load(std::memory_order_relaxed));
     }
 
     void ANS_DSP_State::set_dry_gain_db(const float db)
@@ -40,7 +40,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_dry_gain_db() const
     {
-        return ans_dsp::linear_to_db(m_data.m_dry_gain_lin_smoothed);
+        return ans_dsp::linear_to_db(m_data.m_dry_gain_lin_target.load(std::memory_order_relaxed));
     }
 
     void ANS_DSP_State::set_feedback_percent(const float value)
@@ -52,7 +52,7 @@ namespace ans_delay
 
     float ANS_DSP_State::get_feedback_percent() const
     {
-        return m_data.m_feedback_normalized_smoothed * 100.0f;
+        return m_data.m_feedback_normalized_target.load(std::memory_order_relaxed) * 100.0f;
     }
 
     void ANS_DSP_State::start_fading_out()
