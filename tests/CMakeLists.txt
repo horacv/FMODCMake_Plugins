@@ -4,3 +4,4 @@ add_executable(tests
         tests_main.cpp)
 
 target_link_libraries(tests ans_dsp)
+add_test(UNIT_TESTS tests COMMAND tests)

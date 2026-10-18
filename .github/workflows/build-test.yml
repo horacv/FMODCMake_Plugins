@@ -75,12 +75,12 @@ jobs:
       - name: Unit Tests (Windows)
         if: runner.os == 'Windows'
         run: |
-          .\build\${{ matrix.build_type }}\tests\tests.exe
+          ctest --test-dir build --build-config ${{ matrix.build_type }} --output-on-failure
 
       - name: Unit Tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          ./build/${{ matrix.build_type }}/tests/tests
+          ctest --test-dir build --output-on-failure
 
       - name: Upload build artifacts
         if: failure()
