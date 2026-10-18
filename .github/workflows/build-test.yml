@@ -81,3 +81,13 @@ jobs:
             build/
             !build/**/*.o
             !build/**/*.obj
+
+      - name: Unit Tests (Windows)
+        if: runner.os == 'Windows'
+        run: | 
+          .\build\${{ matrix.build_type }}\tests\tests.exe
+
+      - name: Unit Tests (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          ./build/${{ matrix.build_type }}/tests/tests

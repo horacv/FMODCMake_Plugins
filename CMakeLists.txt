@@ -7,3 +7,4 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(libs)
 add_subdirectory(plugins)
+add_subdirectory(tests)
