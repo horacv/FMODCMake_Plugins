@@ -72,6 +72,16 @@ jobs:
         run: |
           cmake --build build
 
+      - name: Unit Tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\build\${{ matrix.build_type }}\tests\tests.exe
+
+      - name: Unit Tests (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          ./build/${{ matrix.build_type }}/tests/tests
+
       - name: Upload build artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -81,13 +91,3 @@ jobs:
             build/
             !build/**/*.o
             !build/**/*.obj
-
-      - name: Unit Tests (Windows)
-        if: runner.os == 'Windows'
-        run: | 
-          .\build\${{ matrix.build_type }}\tests\tests.exe
-
-      - name: Unit Tests (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          ./build/${{ matrix.build_type }}/tests/tests
