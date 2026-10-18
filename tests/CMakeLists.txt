@@ -4,4 +4,8 @@ add_executable(tests
         tests_main.cpp)
 
 target_link_libraries(tests ans_dsp)
-add_test(UNIT_TESTS tests COMMAND tests)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs")
+include(doctest)
+
+doctest_discover_tests(tests)
